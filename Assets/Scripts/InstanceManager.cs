@@ -10,7 +10,8 @@ public class InstanceManager : MonoBehaviour {
     public static InstanceManager instance;
 
     public enum InstanceType { Utils, //Utils object are mostly permanent object used to calculate positions or do some maths
-                               Destroyable //Destroyable are objects that have a lifetime and meant to be destroyed after a period of time
+                               Destroyable, //Destroyable are objects that have a lifetime and meant to be destroyed after a period of time
+                               Items //List of player items
                             }
     [System.Serializable]
     public struct InstanceContener
@@ -36,12 +37,17 @@ public class InstanceManager : MonoBehaviour {
     public GameObject instanceObject(InstanceType type, GameObject model, Vector3 position, Quaternion rotation)
     {
         tempInstance = Instantiate(model, position, rotation) as GameObject;
-        tempInstance.transform.SetParent(instanceTargets.Find(c => c.type == type).target);
+        moveTo(type, tempInstance);
         return tempInstance;
     }
 
     public GameObject instanceObject(InstanceType type, GameObject model)
     {
         return instanceObject(type, model, Vector3.zero, Quaternion.identity);
+    }
+
+    public void moveTo(InstanceType type, GameObject model)
+    {
+        model.transform.SetParent(instanceTargets.Find(c => c.type == type).target);
     }
 }
