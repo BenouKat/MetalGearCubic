@@ -15,43 +15,51 @@ public class Weapon : Items {
     public float timeReload;
 
     public bool automatic;
-    public string associatedAnimation;
+    public string WeaponID;
 
     public enum ShootOutput { VALID, FAILED, EMPTY, RELOAD }
     ShootOutput lastOutput;
     
-    public ShootOutput shoot()
+    public ShootOutput Shoot()
     {
-        if(!isReadyToShoot())
+        if(!IsReadyToShoot())
         {
-            lastOutput = currentAmmo > 0 ? ShootOutput.FAILED : ShootOutput.EMPTY;
-            return lastOutput;
+            lastOutput = (currentAmmo > 0 || currentMagazine > 0) ? ShootOutput.FAILED : ShootOutput.EMPTY;
         }
-
-        lastAction = Time.time;
-        currentAmmo--;
-
-        if(currentAmmo == 0 && currentMagazine > 0)
+        else
         {
-            StartCoroutine(reload());
-            lastOutput = ShootOutput.RELOAD;
-            return lastOutput;
-        }
+            lastAction = Time.time;
+            currentAmmo--;
 
-        lastOutput = ShootOutput.VALID;
+            if (currentAmmo == 0 && currentMagazine > 0)
+            {
+                StartCoroutine(Reload());
+                lastOutput = ShootOutput.RELOAD;
+            }
+            else
+            {
+                lastOutput = ShootOutput.VALID;
+            }
+        }
+        
         return lastOutput;
     }
 
-    public bool isReadyToShoot()
+    public bool IsReadyToShoot()
     {
         return currentAmmo > 0 && Time.time - lastAction >= timeBeforeNextShoot;
     }
 
-    IEnumerator reload()
+    IEnumerator Reload()
     {
         yield return new WaitForSeconds(timeReload);
 
         currentAmmo = maxAmmoPerMagazine;
         currentMagazine--;
+    }
+
+    public ShootOutput GetShootOutput()
+    {
+        return lastOutput;
     }
 }

@@ -1052,6 +1052,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerAnimator: {fileID: 95668712755234624}
+  playerBehaviour: {fileID: 0}
+  walkingMode: 0
+  aim: 0
 --- !u!114 &114724128854347310
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1066,3 +1069,4 @@ MonoBehaviour:
   maxSpeed: 5
   speedRotationSmooth: 0.5
   collisionDistance: 0.5
+  playerItems: []

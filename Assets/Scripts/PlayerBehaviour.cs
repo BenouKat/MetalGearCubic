@@ -30,15 +30,15 @@ public class PlayerBehaviour : MonoBehaviour {
         if (currentCamera == null) currentCamera = Camera.main;
 
         //Util to calculate input direction regarding the rotation of the camera
-        cameraDirection = InstanceManager.instance.instanceObject(InstanceManager.InstanceType.Utils, 
+        cameraDirection = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Utils, 
             new GameObject("CameraDirection")).transform;
 
         //Util for applying a smooth rotation to player
-        playerRotation = InstanceManager.instance.instanceObject(InstanceManager.InstanceType.Utils,
+        playerRotation = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Utils,
             new GameObject("PlayerRotation")).transform;
 
         //Setting up the plane to catch the mouse direction for aiming
-        mousePlaneTransform = InstanceManager.instance.instanceObject(InstanceManager.InstanceType.Utils,
+        mousePlaneTransform = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Utils,
             new GameObject("Raycatcher"));
 
         mousePlaneTransform.transform.localScale = Vector3.right * 100f + Vector3.up * 0.01f + Vector3.forward * 100f;
@@ -51,17 +51,17 @@ public class PlayerBehaviour : MonoBehaviour {
 
     private void Update()
     {
-        updatePosition();
+        UpdatePosition();
 
         //If the player has a weapon equiped, allow him to aim
-        if (getEquipedWeapon() != null)
+        if (GetEquipedWeapon() != null)
         {
-            updateAimBehavior(1);
+            UpdateAimBehavior(1);
         }
     }
 
     //Update player position
-    public void updatePosition()
+    public void UpdatePosition()
     {
         if (Input.GetButton("Aim") || Mathf.Approximately(Input.GetAxisRaw("Horizontal"), 0f) && Mathf.Approximately(Input.GetAxisRaw("Vertical"), 0f) && currentCamera != null)
         {
@@ -76,7 +76,7 @@ public class PlayerBehaviour : MonoBehaviour {
         else
         {
             //Calculate direction point from the center of the joystick
-            refreshStickDirection();
+            RefreshStickDirection();
 
             //Player move in the direction and write velocity
             transform.position += stickDirection * Time.deltaTime * maxSpeed;
@@ -89,12 +89,12 @@ public class PlayerBehaviour : MonoBehaviour {
         }
     }
 
-    public void updateAimBehavior(int level)
+    public void UpdateAimBehavior(int level)
     {
         switch(level)
         {
             case 1:
-            updateAimPS1();
+            UpdateAimPS1();
                 break;
             case 2:
                 //ToDo
@@ -105,7 +105,7 @@ public class PlayerBehaviour : MonoBehaviour {
         }
     }
 
-    public void updateAimPS1()
+    public void UpdateAimPS1()
     {
         if (Input.GetButton("Aim"))
         {
@@ -131,7 +131,7 @@ public class PlayerBehaviour : MonoBehaviour {
             //Shoot
             if (Input.GetButtonDown("Shoot"))
             {
-                updateShootBehavior();
+                UpdateShootBehavior();
             }
         }
 
@@ -142,33 +142,33 @@ public class PlayerBehaviour : MonoBehaviour {
         }
     }
 
-    public void updateShootBehavior()
+    public void UpdateShootBehavior()
     {
-        Weapon.ShootOutput output = getEquipedWeapon().shoot();
+        Weapon.ShootOutput output = GetEquipedWeapon().Shoot();
 
         switch(output)
         {
             case Weapon.ShootOutput.VALID:
-                //Coup de feu sur l'arme et tir
+                SoundManager.instance.play("Shoot" + GetEquipedWeapon().WeaponID, transform.position, SoundManager.AudioType.SOUND);
                 break;
             case Weapon.ShootOutput.EMPTY:
-                //Clic clic
+                SoundManager.instance.play("EmptyAmmo", transform.position, SoundManager.AudioType.SOUND);
                 break;
             case Weapon.ShootOutput.RELOAD:
-                //Animation de reload
+                SoundManager.instance.play("Reload", transform.position, SoundManager.AudioType.SOUND);
                 break;
         }
     }
 
     //Refresh stick position related to the camera orientation
-    void refreshStickDirection()
+    void RefreshStickDirection()
     {
         stickDirection = Vector3.zero;
 
         //We test physics on the two axes to prevent wall hit and redirect the player in the best direction along the wall
         if (!Mathf.Approximately(Input.GetAxisRaw("Horizontal"), 0f))
         {
-            if (!Physics.Raycast(transform.position, cameraDirection.right * Input.GetAxisRaw("Horizontal"), collisionDistance, getCollisionLayers()))
+            if (!Physics.Raycast(transform.position, cameraDirection.right * Input.GetAxisRaw("Horizontal"), collisionDistance, GetCollisionLayers()))
             {
                 stickDirection += cameraDirection.right * Input.GetAxisRaw("Horizontal");
             }
@@ -176,7 +176,7 @@ public class PlayerBehaviour : MonoBehaviour {
 
         if (!Mathf.Approximately(Input.GetAxisRaw("Vertical"), 0f))
         {
-            if (!Physics.Raycast(transform.position, cameraDirection.forward * Input.GetAxisRaw("Vertical"), collisionDistance, getCollisionLayers()))
+            if (!Physics.Raycast(transform.position, cameraDirection.forward * Input.GetAxisRaw("Vertical"), collisionDistance, GetCollisionLayers()))
             {
                 stickDirection += cameraDirection.forward * Input.GetAxisRaw("Vertical");
             }
@@ -185,18 +185,18 @@ public class PlayerBehaviour : MonoBehaviour {
         if (stickDirection.magnitude > 1f) stickDirection.Normalize();
     }
 
-    int getCollisionLayers()
+    int GetCollisionLayers()
     {
         return 1 << LayerMask.NameToLayer("Unmovable");
     }
 
     float playerVelocity;
-    public float getPlayerVelocity()
+    public float GetPlayerVelocity()
     {
         return playerVelocity;
     }
 
-    public Weapon getEquipedWeapon()
+    public Weapon GetEquipedWeapon()
     {
         if(equiped >= 0 && playerItems[equiped] is Weapon)
         {

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Items : MonoBehaviour {
 
-    public GameObject graphics;
+    public GameObject objectModel;
 
     public void OnTriggerEnter(Collider other)
     {
@@ -12,8 +12,8 @@ public class Items : MonoBehaviour {
         if((player = other.GetComponent<PlayerBehaviour>()) != null)
         {
             player.playerItems.Add(this);
-            graphics.SetActive(false);
-            InstanceManager.instance.moveTo(InstanceManager.InstanceType.Items, gameObject);
+            objectModel.SetActive(false);
+            InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Items, gameObject);
         }
     }
 }
