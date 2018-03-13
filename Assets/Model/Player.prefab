@@ -1053,8 +1053,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerAnimator: {fileID: 95668712755234624}
   playerBehaviour: {fileID: 0}
+  walkingModeSpeed:
+  - 0
+  - 0.5
+  - 1
   walkingMode: 0
   aim: 0
+  aimMG: 0
+  shoot: 0
+  shootMG: 0
 --- !u!114 &114724128854347310
 MonoBehaviour:
   m_ObjectHideFlags: 1

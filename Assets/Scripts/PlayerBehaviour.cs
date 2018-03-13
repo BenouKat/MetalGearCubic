@@ -134,6 +134,14 @@ public class PlayerBehaviour : MonoBehaviour {
                 UpdateShootBehavior();
             }
         }
+        else
+        {
+            //Shoot
+            if (Input.GetButtonDown("Shoot"))
+            {
+                GetEquipedWeapon().CallReload();
+            }
+        }
 
         //Release aim
         if (Input.GetButtonUp("Aim"))

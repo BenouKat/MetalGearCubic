@@ -11,6 +11,7 @@ public class Weapon : Items {
     public int maxMagasine;
 
     float lastAction;
+
     public float timeBeforeNextShoot;
     public float timeReload;
 
@@ -22,22 +23,27 @@ public class Weapon : Items {
     
     public ShootOutput Shoot()
     {
-        if(!IsReadyToShoot())
+        if(Time.time - lastAction < timeBeforeNextShoot)
         {
-            lastOutput = (currentAmmo > 0 || currentMagazine > 0) ? ShootOutput.FAILED : ShootOutput.EMPTY;
+             lastOutput = ShootOutput.FAILED;
         }
         else
         {
-            lastAction = Time.time;
-            currentAmmo--;
-
-            if (currentAmmo == 0 && currentMagazine > 0)
+            if (currentAmmo == 0)
             {
-                StartCoroutine(Reload());
-                lastOutput = ShootOutput.RELOAD;
+                if (currentMagazine > 0)
+                {
+                    CallReload();
+                }
+                else
+                {
+                    lastOutput = ShootOutput.EMPTY;
+                }
             }
             else
             {
+                currentAmmo--;
+                lastAction = Time.time;
                 lastOutput = ShootOutput.VALID;
             }
         }
@@ -45,9 +51,20 @@ public class Weapon : Items {
         return lastOutput;
     }
 
-    public bool IsReadyToShoot()
+    //A revoir...
+    public void CallReload()
     {
-        return currentAmmo > 0 && Time.time - lastAction >= timeBeforeNextShoot;
+        if(currentAmmo < maxAmmoPerMagazine && currentMagazine > 0)
+        {
+            lastOutput = ShootOutput.RELOAD;
+            lastAction = Time.time;
+            CallReload();
+            StartCoroutine(Reload());
+        }
+        else
+        {
+            lastOutput = ShootOutput.FAILED;
+        }
     }
 
     IEnumerator Reload()

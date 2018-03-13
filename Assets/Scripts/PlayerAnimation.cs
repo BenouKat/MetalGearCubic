@@ -8,13 +8,12 @@ public class PlayerAnimation : MonoBehaviour {
     public PlayerBehaviour playerBehaviour;
 
     public float[] walkingModeSpeed;
-    int armLayer;
 
 	// Use this for initialization
 	void Start () {
         if (playerBehaviour == null) playerBehaviour = GetComponent<PlayerBehaviour>();
         if (playerAnimator == null) playerAnimator = transform.GetChild(0).GetComponent<Animator>();
-        armLayer = playerAnimator.GetLayerIndex("ArmLayer");
+
     }
 
     /**
@@ -32,35 +31,57 @@ public class PlayerAnimation : MonoBehaviour {
      *          - ReloadPistol
      *          - ReloadMachineGun
      **/
-     
-	// Update is called once per frame
-	void Update () {
-        
-        playerAnimator.SetFloat("PlayerVelocity", VelocityToWalkingMode(playerBehaviour.GetPlayerVelocity()));
 
-        if(Input.GetButtonDown("Aim"))
+    public int walkingMode = 0;
+    public bool aim = false;
+    public bool aimMG = false;
+    public bool shoot = false;
+    public bool shootMG = false;
+
+    // Update is called once per frame
+    void Update()
+    {
+        playerAnimator.SetInteger("WalkingMode", VelocityToWalkingMode(playerBehaviour.GetPlayerVelocity()));
+
+        if (Input.GetButtonDown("Aim"))
         {
             playerAnimator.SetBool("Aim" + playerBehaviour.GetEquipedWeapon().WeaponID, true);
         }
 
-        if(Input.GetButtonUp("Aim"))
+        if (Input.GetButtonUp("Aim"))
         {
-            playerAnimator.SetBool("Aim", false);
+            playerAnimator.SetBool("Aim" + playerBehaviour.GetEquipedWeapon().WeaponID, false);
         }
 
-        if(Input.GetButtonDown("Shoot"))
+        if(Input.GetButton("Aim"))
         {
-            Weapon.ShootOutput output = playerBehaviour.GetEquipedWeapon().GetShootOutput();
-            switch(output)
+            if (Input.GetButtonDown("Shoot"))
             {
-                case Weapon.ShootOutput.VALID:
-                    playerAnimator.Play("Shoot" + playerBehaviour.GetEquipedWeapon().WeaponID, armLayer);
-                    break;
-                case Weapon.ShootOutput.RELOAD:
-                    playerAnimator.Play("Reload" + playerBehaviour.GetEquipedWeapon().WeaponID, armLayer);
-                    break;
+                Weapon.ShootOutput output = playerBehaviour.GetEquipedWeapon().GetShootOutput();
+                switch (output)
+                {
+                    case Weapon.ShootOutput.VALID:
+                        playerAnimator.SetBool("Shoot" + playerBehaviour.GetEquipedWeapon().WeaponID, true);
+                        break;
+                    case Weapon.ShootOutput.RELOAD:
+                        playerAnimator.SetTrigger("Reload" + playerBehaviour.GetEquipedWeapon().WeaponID);
+                        break;
+                }
+            }
+
+            if (Input.GetButtonUp("Shoot"))
+            {
+                playerAnimator.SetBool("Shoot" + playerBehaviour.GetEquipedWeapon().WeaponID, false);
             }
         }
+        else
+        {
+            if (Input.GetButtonDown("Shoot") && playerBehaviour.GetEquipedWeapon().GetShootOutput() == Weapon.ShootOutput.RELOAD)
+            {
+                playerAnimator.SetBool("Shoot" + playerBehaviour.GetEquipedWeapon().WeaponID, false);
+            }
+        }
+        
     }
 
     int VelocityToWalkingMode(float velocity)
