@@ -18,6 +18,7 @@ public class PlayerBehaviour : MonoBehaviour {
     [Header("Item list")]
     public List<Item> playerItems;
     int equiped = -1;
+    public Transform itemHandledPosition;
 
     [Header("Shooting Level 1")]
     GameObject mousePlaneTransform;
@@ -208,17 +209,34 @@ public class PlayerBehaviour : MonoBehaviour {
 
     public void Equip(Item item)
     {
+        Unequip();
         equiped = playerItems.IndexOf(item);
+        GetEquipedItem().Equip();
+
+        //Take the item in hand
+        GetEquipedItem().transform.SetParent(itemHandledPosition.transform);
+        GetEquipedItem().transform.localPosition = Vector3.zero;
+        GetEquipedItem().transform.localRotation = Quaternion.identity;
     }
 
     public void Unequip()
     {
+        if (equiped != -1)
+        {
+            GetEquipedItem().Unequip();
+        }
         equiped = -1;
+    }
+
+    public Item GetEquipedItem()
+    {
+        if (equiped < 0) return null;
+        return playerItems[equiped];
     }
 
     public Weapon GetEquipedWeapon()
     {
-        if(equiped >= 0 && playerItems[equiped] is Weapon)
+        if(GetEquipedItem() is Weapon)
         {
             return (Weapon)playerItems[equiped];
         }

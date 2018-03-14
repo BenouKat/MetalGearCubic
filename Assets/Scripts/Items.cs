@@ -17,14 +17,13 @@ public class Item : MonoBehaviour {
             InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Items, gameObject);
         }
     }
-
-    public void equip()
+    
+    public void Equip()
     {
         handledModel.SetActive(true);
-
     }
 
-    public void unequip()
+    public void Unequip()
     {
         handledModel.SetActive(false);
         InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Items, gameObject);
