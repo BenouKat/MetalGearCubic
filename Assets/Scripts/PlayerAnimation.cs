@@ -32,58 +32,53 @@ public class PlayerAnimation : MonoBehaviour {
      *          - ReloadMachineGun
      **/
 
-    public int walkingMode = 0;
-    public bool aim = false;
-    public bool aimMG = false;
-    public bool shoot = false;
-    public bool shootMG = false;
-
     // Update is called once per frame
     void Update()
     {
         playerAnimator.SetInteger("WalkingMode", VelocityToWalkingMode(playerBehaviour.GetPlayerVelocity()));
-
-        if (Input.GetButtonDown("Aim"))
+        
+        if (playerBehaviour.GetEquipedWeapon() != null)
         {
-            playerAnimator.SetBool("Aim" + playerBehaviour.GetEquipedWeapon().WeaponID, true);
-        }
+            playerAnimator.SetInteger("WeaponMode", (int)playerBehaviour.GetEquipedWeapon().weaponType);
+            playerAnimator.SetBool("Aim", Input.GetButton("Aim"));
 
-        if (Input.GetButtonUp("Aim"))
-        {
-            playerAnimator.SetBool("Aim" + playerBehaviour.GetEquipedWeapon().WeaponID, false);
-        }
-
-        if(Input.GetButton("Aim"))
-        {
-            if (Input.GetButtonDown("Shoot"))
+            //If we aim, do we shoot ?
+            if (Input.GetButton("Aim"))
             {
-                Weapon.ShootOutput output = playerBehaviour.GetEquipedWeapon().GetShootOutput();
-                switch (output)
+                //Shoot
+                if (Input.GetButtonDown("Shoot"))
                 {
-                    case Weapon.ShootOutput.VALID:
-                        playerAnimator.SetBool("Shoot" + playerBehaviour.GetEquipedWeapon().WeaponID, true);
-                        break;
-                    case Weapon.ShootOutput.RELOAD:
-                        playerAnimator.SetTrigger("Reload" + playerBehaviour.GetEquipedWeapon().WeaponID);
-                        break;
+                    Weapon.ShootOutput output = playerBehaviour.GetEquipedWeapon().GetShootOutput();
+                    switch (output)
+                    {
+                        case Weapon.ShootOutput.VALID:
+                            playerAnimator.SetBool("Shoot", true);
+                            break;
+                        case Weapon.ShootOutput.RELOAD:
+                            playerAnimator.SetBool("Shoot", false);
+                            playerAnimator.SetTrigger("Reload");
+                            break;
+                    }
+                }
+
+                //We stop the shoot animation in case it's a loop (machine gun)
+                if (Input.GetButtonUp("Shoot"))
+                {
+                    playerAnimator.SetBool("Shoot", false);
                 }
             }
-
-            if (Input.GetButtonUp("Shoot"))
+            else
             {
-                playerAnimator.SetBool("Shoot" + playerBehaviour.GetEquipedWeapon().WeaponID, false);
+                //If we are not aiming but clic the shoot button, it reloads the weapon
+                if (Input.GetButtonDown("Shoot") && playerBehaviour.GetEquipedWeapon().GetShootOutput() == Weapon.ShootOutput.RELOAD)
+                {
+                    playerAnimator.SetTrigger("Reload");
+                }
             }
         }
-        else
-        {
-            if (Input.GetButtonDown("Shoot") && playerBehaviour.GetEquipedWeapon().GetShootOutput() == Weapon.ShootOutput.RELOAD)
-            {
-                playerAnimator.SetBool("Shoot" + playerBehaviour.GetEquipedWeapon().WeaponID, false);
-            }
-        }
-        
     }
 
+    //Convert the player velocity into a walking state
     int VelocityToWalkingMode(float velocity)
     {
         for(int i=0; i<walkingModeSpeed.Length; i++)

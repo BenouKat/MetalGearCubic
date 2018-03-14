@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Items : MonoBehaviour {
+public class Item : MonoBehaviour {
 
-    public GameObject objectModel;
+    public GameObject collectibleModel;
+    public GameObject handledModel;
 
     public void OnTriggerEnter(Collider other)
     {
@@ -12,8 +13,20 @@ public class Items : MonoBehaviour {
         if((player = other.GetComponent<PlayerBehaviour>()) != null)
         {
             player.playerItems.Add(this);
-            objectModel.SetActive(false);
+            collectibleModel.SetActive(false);
             InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Items, gameObject);
         }
+    }
+
+    public void equip()
+    {
+        handledModel.SetActive(true);
+
+    }
+
+    public void unequip()
+    {
+        handledModel.SetActive(false);
+        InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Items, gameObject);
     }
 }

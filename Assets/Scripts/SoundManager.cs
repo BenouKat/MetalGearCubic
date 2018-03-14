@@ -23,10 +23,12 @@ public class SoundManager : MonoBehaviour {
         public AudioType type;
         public AudioMixerGroup audioGroup;
     }
-    public List<AudioChannel> audioChannels;
+    [SerializeField]
+    List<AudioChannel> audioChannels;
 
     //All sound prefab
-    public List<GameObject> soundPrefab;
+    [SerializeField]
+    List<GameObject> soundPrefab;
 
     //Instance the prefab at the right place and assign it to the right audio group
     public void instanceSoundPrefab(GameObject soundPrefab, Vector3 position, AudioType type)
@@ -51,7 +53,12 @@ public class SoundManager : MonoBehaviour {
         }
         else
         {
-            Debug.LogWarning("The sound " + sound + " is missing in the prefab list");
+            Debug.LogWarning("The sound " + sound + " is missing in the prefab list, not played");
         }
+    }
+
+    public AudioMixerGroup GetAMGChannel(AudioType type)
+    {
+        return audioChannels.Find(c => c.type == type).audioGroup;
     }
 }

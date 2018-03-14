@@ -16,7 +16,7 @@ public class PlayerBehaviour : MonoBehaviour {
     Vector3 stickDirection;
 
     [Header("Item list")]
-    public List<Items> playerItems;
+    public List<Item> playerItems;
     int equiped = -1;
 
     [Header("Shooting Level 1")]
@@ -91,7 +91,9 @@ public class PlayerBehaviour : MonoBehaviour {
 
     public void UpdateAimBehavior(int level)
     {
-        switch(level)
+        if (GetEquipedWeapon() == null) return;
+
+        switch (level)
         {
             case 1:
             UpdateAimPS1();
@@ -157,7 +159,7 @@ public class PlayerBehaviour : MonoBehaviour {
         switch(output)
         {
             case Weapon.ShootOutput.VALID:
-                SoundManager.instance.play("Shoot" + GetEquipedWeapon().WeaponID, transform.position, SoundManager.AudioType.SOUND);
+                SoundManager.instance.play(GetEquipedWeapon().shootSound, transform.position, SoundManager.AudioType.SOUND);
                 break;
             case Weapon.ShootOutput.EMPTY:
                 SoundManager.instance.play("EmptyAmmo", transform.position, SoundManager.AudioType.SOUND);
@@ -202,6 +204,16 @@ public class PlayerBehaviour : MonoBehaviour {
     public float GetPlayerVelocity()
     {
         return playerVelocity;
+    }
+
+    public void Equip(Item item)
+    {
+        equiped = playerItems.IndexOf(item);
+    }
+
+    public void Unequip()
+    {
+        equiped = -1;
     }
 
     public Weapon GetEquipedWeapon()
