@@ -16,22 +16,6 @@ public class PlayerAnimation : MonoBehaviour {
 
     }
 
-    /**
-     * Animation to do :
-     * Legs :   - Idle
-     *          - Walk
-     *          - Run
-     * Body :   - Idle
-     *          - Walk
-     *          - Run
-     *          - Aim Pistol
-     *          - Shoot Pistol
-     *          - Aim machinegun
-     *          - Shoot Machinegun
-     *          - ReloadPistol
-     *          - ReloadMachineGun
-     **/
-
     // Update is called once per frame
     void Update()
     {

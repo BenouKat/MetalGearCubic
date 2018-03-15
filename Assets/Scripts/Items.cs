@@ -18,9 +18,14 @@ public class Item : MonoBehaviour {
         }
     }
     
-    public void Equip()
+    public void Equip(Transform hand)
     {
         handledModel.SetActive(true);
+
+        //Take the item in hand
+        transform.SetParent(hand);
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
     }
 
     public void Unequip()

@@ -17,6 +17,7 @@ public class Weapon : Item {
     
     public enum WeaponType { ONESHOT = 0, AUTO = 1 };
     public WeaponType weaponType;
+    public bool triggerPulled = false;
 
     public enum ShootOutput { VALID, FAILED, EMPTY, RELOAD }
     ShootOutput lastOutput;
@@ -25,36 +26,50 @@ public class Weapon : Item {
     
     public ShootOutput Shoot()
     {
-        if(Time.time - lastAction < timeBeforeNextShoot) //If we call a shoot before the next action it failed
+        //If the weapon is not automatic, it needs to be release each time
+        if(!isAutomatic() && triggerPulled)
         {
-             lastOutput = ShootOutput.FAILED;
+            lastOutput = ShootOutput.FAILED;
         }
         else
         {
-            if (currentAmmo == 0)
+            triggerPulled = true;
+            if (Time.time - lastAction < timeBeforeNextShoot) //If we call a shoot before the next action it failed
             {
-                //If the current ammo are 0 but there's still magazine, we call reload
-                if (currentMagazine > 0)
-                {
-                    CallReload();
-                }
-                else
-                {
-                    //Else, the weapon is empty
-                    lastOutput = ShootOutput.EMPTY;
-                }
+                lastOutput = ShootOutput.FAILED;
             }
             else
             {
-                //Lost an ammo when the shoot is valid
-                currentAmmo--;
-                lastAction = Time.time;
-                lastOutput = ShootOutput.VALID;
-                sendBullet();
+                if (currentAmmo == 0)
+                {
+                    //If the current ammo are 0 but there's still magazine, we call reload
+                    if (currentMagazine > 0)
+                    {
+                        CallReload();
+                    }
+                    else
+                    {
+                        //Else, the weapon is empty
+                        lastOutput = ShootOutput.EMPTY;
+                    }
+                }
+                else
+                {
+                    //Lost an ammo when the shoot is valid
+                    currentAmmo--;
+                    lastAction = Time.time;
+                    lastOutput = ShootOutput.VALID;
+                    sendBullet();
+                }
             }
         }
-        
         return lastOutput;
+    }
+
+    //Release the trigger
+    public void Release()
+    {
+        triggerPulled = false;
     }
 
     public void sendBullet()

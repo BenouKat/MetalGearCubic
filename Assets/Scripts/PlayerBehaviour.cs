@@ -136,6 +136,12 @@ public class PlayerBehaviour : MonoBehaviour {
             {
                 UpdateShootBehavior();
             }
+
+            //Release
+            if(Input.GetButtonUp("Shoot"))
+            {
+                GetEquipedWeapon().Release();
+            }
         }
         else
         {
@@ -211,12 +217,7 @@ public class PlayerBehaviour : MonoBehaviour {
     {
         Unequip();
         equiped = playerItems.IndexOf(item);
-        GetEquipedItem().Equip();
-
-        //Take the item in hand
-        GetEquipedItem().transform.SetParent(itemHandledPosition.transform);
-        GetEquipedItem().transform.localPosition = Vector3.zero;
-        GetEquipedItem().transform.localRotation = Quaternion.identity;
+        GetEquipedItem().Equip(itemHandledPosition.transform);
     }
 
     public void Unequip()
