@@ -12,7 +12,8 @@ public class InstanceManager : MonoBehaviour {
     public enum InstanceType { Utils, //Utils object are mostly permanent object used to calculate positions or do some maths
                                Destroyable, //Destroyable are objects that have a lifetime and meant to be destroyed after a period of time
                                Items, //List of player items
-                               Audio //All sounds
+                               Audio, //All sounds
+                               Graphics //Instancied graphics like hole in the wall, etc...
                             }
     [System.Serializable]
     public struct InstanceContener

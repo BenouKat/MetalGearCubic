@@ -95,6 +95,7 @@ public class Weapon : Item {
         }
     }
 
+    //When the time is out, we reload for good !
     IEnumerator Reload()
     {
         yield return new WaitForSeconds(timeReload);

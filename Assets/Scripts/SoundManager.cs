@@ -44,6 +44,7 @@ public class SoundManager : MonoBehaviour {
         play(sound, Vector3.zero, type);
     }
 
+    //Same but we set the position
     public void play(string sound, Vector3 position, AudioType type)
     {
         GameObject audioPrefab = soundPrefab.Find(c => c.name == sound);
