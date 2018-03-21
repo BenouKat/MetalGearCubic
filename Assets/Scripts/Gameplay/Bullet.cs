@@ -23,7 +23,8 @@ public class Bullet : MonoBehaviour {
     {
         bulletRigidbody = GetComponent<Rigidbody>();
 
-        //FIRE !! We use here ForceMode.VelocityChange because we simply the physic to a no-mass bullet. Note that we can use rb.velocity here to do the same
+        //FIRE !! We use here ForceMode.VelocityChange because we simply the physic to a no-mass bullet. 
+        //Note that we can use rb.velocity here to do the same
         bulletRigidbody.AddForce(transform.forward * forceBullet, ForceMode.VelocityChange);
     }
 
@@ -33,6 +34,7 @@ public class Bullet : MonoBehaviour {
         if (bounceCount < maxBounce && Random.Range(0f, 1f) <= chanceBounce)
         {
             RecalcTrajectory(hitObject.collider.gameObject.layer);
+            bounceCount++;
         }
         else
         {

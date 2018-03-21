@@ -126,6 +126,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1458643069726700
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4199996389771146}
+  m_Layer: 0
+  m_Name: HandledObjects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1539309984864316
 GameObject:
   m_ObjectHideFlags: 1
@@ -375,6 +390,19 @@ Transform:
   m_Father: {fileID: 4659128115760714}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4199996389771146
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1458643069726700}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4744736869034584}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4227573969313490
 Transform:
   m_ObjectHideFlags: 1
@@ -541,7 +569,8 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.35, y: 0, z: 0}
   m_LocalScale: {x: 0.19999999, y: 0.2, z: 0.2}
-  m_Children: []
+  m_Children:
+  - {fileID: 4199996389771146}
   m_Father: {fileID: 4512634096491922}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1052,16 +1081,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerAnimator: {fileID: 95668712755234624}
-  playerBehaviour: {fileID: 0}
+  playerBehaviour: {fileID: 114724128854347310}
   walkingModeSpeed:
   - 0
-  - 0.5
-  - 1
-  walkingMode: 0
-  aim: 0
-  aimMG: 0
-  shoot: 0
-  shootMG: 0
+  - 0.1
+  - 2
 --- !u!114 &114724128854347310
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1076,4 +1100,6 @@ MonoBehaviour:
   maxSpeed: 5
   speedRotationSmooth: 0.5
   collisionDistance: 0.5
+  decalRaycastDistance: 0.35
   playerItems: []
+  itemHandledPosition: {fileID: 4199996389771146}

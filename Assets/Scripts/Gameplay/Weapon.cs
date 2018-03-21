@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Weapon : Item {
 
+    public Transform canonPosition;
+
     public int currentAmmo;
     public int currentMagazine;
 
@@ -74,7 +76,7 @@ public class Weapon : Item {
 
     public void sendBullet()
     {
-
+        //To do
     }
 
     //Reload the weapon

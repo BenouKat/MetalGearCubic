@@ -58,6 +58,7 @@ public class SoundManager : MonoBehaviour {
         }
     }
 
+    //Get the audio mixer group
     public AudioMixerGroup GetAMGChannel(AudioType type)
     {
         return audioChannels.Find(c => c.type == type).audioGroup;

@@ -35,9 +35,11 @@ public class PlayerAnimation : MonoBehaviour {
                     Weapon.ShootOutput output = playerBehaviour.GetEquipedWeapon().GetShootOutput();
                     switch (output)
                     {
+                        //Shoot is valid, we do anim shoot !
                         case Weapon.ShootOutput.VALID:
                             playerAnimator.SetBool("Shoot", true);
                             break;
+                        //Oups, we need to reload, play reload animation
                         case Weapon.ShootOutput.RELOAD:
                             playerAnimator.SetBool("Shoot", false);
                             playerAnimator.SetTrigger("Reload");
@@ -67,7 +69,7 @@ public class PlayerAnimation : MonoBehaviour {
     {
         for(int i=0; i<walkingModeSpeed.Length; i++)
         {
-            if (walkingModeSpeed[i] > velocity) return i - 1;
+            if (walkingModeSpeed[i] >= velocity) return i - 1;
         }
         return walkingModeSpeed.Length - 1;
     }

@@ -8,6 +8,7 @@ public class PlayerBehaviour : MonoBehaviour {
     public float maxSpeed = 1f;
     public float speedRotationSmooth = 0.5f;
     public float collisionDistance = 0.7f;
+    public float decalRaycastDistance = 0.35f;
 
     Camera currentCamera;
     Transform cameraDirection;
@@ -73,6 +74,7 @@ public class PlayerBehaviour : MonoBehaviour {
 
             //Looking the camera, camera will never be upside down
             cameraDirection.LookAt(currentCamera.transform, Vector3.up);
+            playerVelocity = 0f;
         }
         else
         {
@@ -205,7 +207,8 @@ public class PlayerBehaviour : MonoBehaviour {
         //We test physics on the two axes to prevent wall hit and redirect the player in the best direction along the wall
         if (!Mathf.Approximately(Input.GetAxisRaw("Horizontal"), 0f))
         {
-            if (!Physics.Raycast(transform.position, cameraDirection.right * Input.GetAxisRaw("Horizontal"), collisionDistance, GetCollisionLayers()))
+            if (!Physics.Raycast(transform.position + cameraDirection.forward*decalRaycastDistance, cameraDirection.right * Input.GetAxisRaw("Horizontal"), collisionDistance, GetCollisionLayers())
+                && !Physics.Raycast(transform.position - cameraDirection.forward * decalRaycastDistance, cameraDirection.right * Input.GetAxisRaw("Horizontal"), collisionDistance, GetCollisionLayers()))
             {
                 stickDirection += cameraDirection.right * Input.GetAxisRaw("Horizontal");
             }
@@ -213,7 +216,8 @@ public class PlayerBehaviour : MonoBehaviour {
 
         if (!Mathf.Approximately(Input.GetAxisRaw("Vertical"), 0f))
         {
-            if (!Physics.Raycast(transform.position, cameraDirection.forward * Input.GetAxisRaw("Vertical"), collisionDistance, GetCollisionLayers()))
+            if (!Physics.Raycast(transform.position + cameraDirection.right * decalRaycastDistance, cameraDirection.forward * Input.GetAxisRaw("Vertical"), collisionDistance, GetCollisionLayers())
+                && !Physics.Raycast(transform.position - cameraDirection.right * decalRaycastDistance, cameraDirection.forward * Input.GetAxisRaw("Vertical"), collisionDistance, GetCollisionLayers()))
             {
                 stickDirection += cameraDirection.forward * Input.GetAxisRaw("Vertical");
             }
@@ -239,9 +243,10 @@ public class PlayerBehaviour : MonoBehaviour {
     {
         Unequip();
         equiped = playerItems.IndexOf(item);
-        GetEquipedItem().Equip(itemHandledPosition.transform);
+        GetEquipedItem().Equip(itemHandledPosition);
     }
 
+    //Unequip the player
     public void Unequip()
     {
         if (equiped != -1)
