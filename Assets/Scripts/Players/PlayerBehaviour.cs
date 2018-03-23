@@ -131,6 +131,23 @@ public class PlayerBehaviour : MonoBehaviour {
                     playerRotation.position = transform.position;
                     playerRotation.LookAt(castInfo.point);
                     transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
+
+                    //We are just doing security here, if the point is too close from the canon or the player, we just shoot right away.
+                    //It prevent the bullet to have a too strong angle, or the bullet to go backside (!)
+                    if(Vector3.Distance(castInfo.point, GetEquipedWeapon().canonPosition.position) >= collisionDistance
+                        && Vector3.Distance(castInfo.point, transform.position) >= collisionDistance)
+                    {
+                        //If the mouse is at a good distance, we aim the canon into the cast point.
+                        //Why ? Because we ensure that wherever the canon point to, we aim the standard height for the player.
+                        //This way, the bullet will not miss the target by going under or above it.
+                        GetEquipedWeapon().CanonLook(castInfo.point);
+                    }
+                    else
+                    {
+                        //If we are too close, we just shoot in the direction of the player
+                        GetEquipedWeapon().CanonLook(GetEquipedWeapon().canonPosition.position + transform.forward);
+                    }
+                    
                 }
             }
             else

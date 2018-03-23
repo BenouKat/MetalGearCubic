@@ -269,7 +269,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1212453865486350}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -17.142, y: 0.6, z: -6.068}
+  m_LocalPosition: {x: -17.078, y: 0.6, z: -6.72}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4274726192172078}
@@ -619,7 +619,7 @@ MonoBehaviour:
   currentMagazine: 4
   maxAmmoPerMagazine: 7
   maxMagasine: 4
-  timeBeforeNextShoot: 0.333
+  timeBeforeNextShoot: 0.25
   timeReload: 3
   weaponType: 0
   triggerPulled: 0

@@ -20,9 +20,11 @@ public class PlayerAnimation : MonoBehaviour {
     void Update()
     {
         playerAnimator.SetInteger("WalkingMode", VelocityToWalkingMode(playerBehaviour.GetPlayerVelocity()));
-        
+        playerAnimator.SetBool("Equiped", playerBehaviour.GetEquipedWeapon() != null);
+
         if (playerBehaviour.GetEquipedWeapon() != null)
         {
+            
             playerAnimator.SetInteger("WeaponMode", (int)playerBehaviour.GetEquipedWeapon().weaponType);
             playerAnimator.SetBool("Aim", Input.GetButton("Aim"));
 
@@ -38,6 +40,7 @@ public class PlayerAnimation : MonoBehaviour {
                         //Shoot is valid, we do anim shoot !
                         case Weapon.ShootOutput.VALID:
                             playerAnimator.SetBool("Shoot", true);
+                            playerAnimator.SetTrigger("TriggerPulled");
                             break;
                         //Oups, we need to reload, play reload animation
                         case Weapon.ShootOutput.RELOAD:

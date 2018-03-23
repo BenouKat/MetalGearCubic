@@ -23,7 +23,7 @@ public class Bullet : MonoBehaviour {
     {
         bulletRigidbody = GetComponent<Rigidbody>();
 
-        //FIRE !! We use here ForceMode.VelocityChange because we simply the physic to a no-mass bullet. 
+        //We use here ForceMode.VelocityChange because we simply the physic to a no-mass bullet. 
         //Note that we can use rb.velocity here to do the same
         bulletRigidbody.AddForce(transform.forward * forceBullet, ForceMode.VelocityChange);
     }
@@ -54,8 +54,11 @@ public class Bullet : MonoBehaviour {
         if (Physics.Raycast(transform.position - transform.forward * 1f, transform.forward, out info, 10f, 1 << layerObject))
         {
             //Display wall impact and make a sound
-            GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, wallBounce, info.point, Quaternion.identity);
-            wallHitInst.transform.forward = info.normal;
+            if(wallBounce != null)
+            {
+                GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, wallBounce, info.point, Quaternion.identity);
+                wallHitInst.transform.forward = info.normal;
+            }
             SoundManager.instance.play("Bounce", info.point, SoundManager.AudioType.SOUND);
 
             //To calculate the bounce, we just reflect the initial bullet forward to the hit surface normal
@@ -77,8 +80,11 @@ public class Bullet : MonoBehaviour {
         if (Physics.Raycast(transform.position - transform.forward*1f, transform.forward, out info, 10f, 1 << layerObject))
         {
             //Display wall impact and make a sound
-            GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Graphics, wallHit, info.point, Quaternion.identity);
-            wallHitInst.transform.forward = info.normal;
+            if(wallHit != null)
+            {
+                GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Graphics, wallHit, info.point, Quaternion.identity);
+                wallHitInst.transform.forward = info.normal;
+            }
             SoundManager.instance.play("Impact", info.point, SoundManager.AudioType.SOUND);
         }
     }

@@ -5,6 +5,8 @@ using UnityEngine;
 public class Weapon : Item {
 
     public Transform canonPosition;
+    public GameObject shootEffect;
+    public GameObject bullet;
 
     public int currentAmmo;
     public int currentMagazine;
@@ -57,6 +59,7 @@ public class Weapon : Item {
                 }
                 else
                 {
+                    Debug.Log(Time.time);
                     //Lost an ammo when the shoot is valid
                     currentAmmo--;
                     lastAction = Time.time;
@@ -74,9 +77,17 @@ public class Weapon : Item {
         triggerPulled = false;
     }
 
+    //Used in MGS 1 mode to point the canon to the right direction, relative to the mouse distance
+    public void CanonLook(Vector3 pointToLook)
+    {
+        canonPosition.LookAt(pointToLook, Vector3.up);
+    }
+
     public void sendBullet()
     {
-        //To do
+        //Fire ! :)
+        InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, shootEffect, canonPosition.position, canonPosition.rotation);
+        InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, bullet, canonPosition.position, canonPosition.rotation);
     }
 
     //Reload the weapon
@@ -88,7 +99,7 @@ public class Weapon : Item {
             lastOutput = ShootOutput.RELOAD;
 
             //To not deal with 2 variables, we set the time that triggers the last action at timeReload and not timeBNS
-            lastAction = Time.time - timeReload + timeBeforeNextShoot;
+            lastAction = Time.time + timeReload - timeBeforeNextShoot;
             StartCoroutine(Reload());
         }
         else
