@@ -609,6 +609,11 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.size
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 4026583039735978, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
       propertyPath: m_LocalPosition.x
       value: -16.77
@@ -641,10 +646,50 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 65758281790465716, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
         type: 2}
-      propertyPath: m_IsTrigger
+      propertyPath: centerForceImpact
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: radiusOfImpact
+      value: 0.23
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.data[1].time
+      value: 0.15883425
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.data[1].value
+      value: 0.25713322
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.data[1].inSlope
+      value: -0.9978423
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.data[1].outSlope
+      value: -0.9978423
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.data[2].time
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.data[0].inSlope
+      value: -9.294539
+      objectReference: {fileID: 0}
+    - target: {fileID: 114212224226614674, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
+        type: 2}
+      propertyPath: forceImpactInRadius.m_Curve.Array.data[0].outSlope
+      value: -9.294539
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
@@ -3978,46 +4023,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1862518140}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1930971606 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1894174429676648, guid: 676f030e0ea0bf943b05ef4a4aba9c58,
-    type: 2}
-  m_PrefabInternal: {fileID: 306178095}
---- !u!114 &1930971607
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1930971606}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9d61ff80adfebf4ba5b194bf2b05f73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxLife: 10
-  shieldPercentAtSides: 0
-  bloodEffect: {fileID: 0}
-  sizeSubdivision: 0.1
-  radiusOfImpact: 1
-  centerForceImpact: 100
-  forceImpactInRadius:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 2
-      time: 0
-      value: 1
-      inSlope: -2.0672266
-      outSlope: -2.0672266
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 1
-      value: 0.05
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 0
 --- !u!1 &1935282178
 GameObject:
   m_ObjectHideFlags: 0
@@ -4387,7 +4392,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!54 &2061274085
 Rigidbody:
   m_ObjectHideFlags: 0

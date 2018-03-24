@@ -11,11 +11,8 @@ public class Hitbox : MonoBehaviour {
     public GameObject bloodEffect;
 
     //On a player (or enemy) enter contact with a bullet
-    public void OnTriggerEnter(Collider other)
-    {
-        Bullet bullet = other.GetComponent<Bullet>();
-        if(bullet != null)
-        {
+    public void OnImpact(Bullet bullet)
+    { 
             //Loss of life and blood effect
             currentLife -= bullet.damage;
             if(bloodEffect != null)
@@ -29,9 +26,7 @@ public class Hitbox : MonoBehaviour {
                 DieEffect(bullet.transform);
             }
 
-            UnityEditor.EditorApplication.isPaused = true;
-            //Destroy(bullet.gameObject);
-        }
+            Destroy(bullet.gameObject);
     }
 
     //The die effect will blow the player (or enemy) up
@@ -116,7 +111,7 @@ public class Hitbox : MonoBehaviour {
         {
             float rboDistance = Vector3.Distance(rbo.transform.position, originImpact.transform.position);
             if (rboDistance > radiusOfImpact) rboDistance = radiusOfImpact;
-            rbo.AddForce((originImpact.transform.position - rbo.transform.position).normalized * forceImpactInRadius.Evaluate(rboDistance / radiusOfImpact) * centerForceImpact, ForceMode.Impulse);
+            rbo.AddForce((rbo.transform.position - originImpact.transform.position).normalized * forceImpactInRadius.Evaluate(rboDistance / radiusOfImpact) * centerForceImpact, ForceMode.Impulse);
         }
 
         //We destroy the root object, to prevent all player/enemy interaction

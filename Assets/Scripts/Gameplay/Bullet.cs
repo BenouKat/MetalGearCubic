@@ -19,6 +19,10 @@ public class Bullet : MonoBehaviour {
     
     RaycastHit info;
 
+    Hitbox targetedHitbox;
+    Vector3 futurHitPoint;
+    Vector3 oldBulletPosition;
+
     private void Start()
     {
         bulletRigidbody = GetComponent<Rigidbody>();
@@ -26,6 +30,62 @@ public class Bullet : MonoBehaviour {
         //We use here ForceMode.VelocityChange because we simply the physic to a no-mass bullet. 
         //Note that we can use rb.velocity here to do the same
         bulletRigidbody.AddForce(transform.forward * forceBullet, ForceMode.VelocityChange);
+        ResetBulletDestination();
+        CalcBulletDestination();
+    }
+
+    private void Update()
+    {
+        CalcBulletDestination();
+    }
+
+    //To be honest, Unity physic extrapolation is shit. Let's do it ourselves :)
+    //This function calculate the future impact point (if exist), and check we have gone trough it
+    void CalcBulletDestination()
+    {
+        //We check if the bullet has reached the impact point
+        if ((futurHitPoint -transform.position).normalized == (futurHitPoint - oldBulletPosition).normalized)
+        {
+            //If a player is in the way, its our future impact point. We update it as long as the player move.
+            if (Physics.Raycast(transform.position, transform.forward, out info, 1000f, 1 << LayerMask.NameToLayer("Player") | 1 << LayerMask.NameToLayer("Enemy")))
+            {
+                targetedHitbox = info.collider.GetComponent<Hitbox>();
+                futurHitPoint = info.point;
+            }
+            oldBulletPosition = transform.position;
+
+        }
+        else
+        {
+            //If we have reached our target, we see where is the impact point based on its previous position
+            if (Physics.Raycast(oldBulletPosition, transform.forward, out info, 1000f, 1 << LayerMask.NameToLayer("Player") | 1 << LayerMask.NameToLayer("Enemy")))
+            {
+                //We just check if the collider targeted is the same than the previous frame
+                if(targetedHitbox == info.collider.GetComponent<Hitbox>())
+                {
+                    //If a player or enemy is in the way, we have touched it !
+                    transform.position = info.point;
+                    info.collider.GetComponent<Hitbox>().OnImpact(this);
+                }
+                else
+                {
+                    //We change the target and not update oldposition to redone the calc newt frame
+                    targetedHitbox = info.collider.GetComponent<Hitbox>();
+                    futurHitPoint = info.point;
+                }
+            }
+            else
+            {
+                //Else if there's no one in the way, we reset the destination
+                ResetBulletDestination();
+            }
+        }
+    }
+
+    void ResetBulletDestination()
+    {
+        oldBulletPosition = transform.position;
+        futurHitPoint = transform.position + transform.forward * 1000f;
     }
 
     //If it's a collision, it's necessary a wall or another solid object where the bullet is stopped
@@ -40,12 +100,6 @@ public class Bullet : MonoBehaviour {
         {
             DestroyBulletOnWall(hitObject.collider.gameObject.layer);
         }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        //Player or Enemy hit
-        //To do
     }
 
     public void RecalcTrajectory(int layerObject)
@@ -71,6 +125,7 @@ public class Bullet : MonoBehaviour {
 
             //We add the force again, but in the right direction this time !
             bulletRigidbody.AddForce(transform.forward * forceBullet, ForceMode.VelocityChange);
+            ResetBulletDestination();
         }
     }
 
