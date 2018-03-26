@@ -132,8 +132,8 @@ MonoBehaviour:
     - serializedVersion: 2
       time: 0
       value: 1
-      inSlope: -2.48743
-      outSlope: -2.48743
+      inSlope: -2.4925427
+      outSlope: -2.4925427
       tangentMode: 0
     - serializedVersion: 2
       time: 1
@@ -144,7 +144,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
-  forceBullet: 50
+  physicalForceBullet: 100
+  forceSpeedBullet: 50
   chanceBounce: 100
   maxBounce: 5
   wallBounce: {fileID: 0}

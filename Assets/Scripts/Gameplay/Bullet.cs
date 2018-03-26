@@ -10,8 +10,9 @@ public class Bullet : MonoBehaviour {
     public float impactRadius;
     public float forceImpact;
     public AnimationCurve forceImpactInRadius = new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 0));
+    public float physicalForceBullet;
 
-    public float forceBullet;
+    public float forceSpeedBullet;
     public float chanceBounce;
     public int maxBounce;
 
@@ -32,7 +33,7 @@ public class Bullet : MonoBehaviour {
 
         //We use here ForceMode.VelocityChange because we simply the physic to a no-mass bullet. 
         //Note that we can use rb.velocity here to do the same
-        bulletRigidbody.AddForce(transform.forward * forceBullet, ForceMode.VelocityChange);
+        bulletRigidbody.AddForce(transform.forward * forceSpeedBullet, ForceMode.VelocityChange);
         ResetBulletDestination();
         CalcBulletDestination();
     }
@@ -129,7 +130,7 @@ public class Bullet : MonoBehaviour {
             bulletRigidbody.angularVelocity = Vector3.zero;
 
             //We add the force again, but in the right direction this time !
-            bulletRigidbody.AddForce(transform.forward * forceBullet, ForceMode.VelocityChange);
+            bulletRigidbody.AddForce(transform.forward * forceSpeedBullet, ForceMode.VelocityChange);
             ResetBulletDestination();
         }
     }

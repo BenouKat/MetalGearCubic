@@ -7,6 +7,7 @@ public class Hitbox : MonoBehaviour {
     public float maxLife;
     float currentLife;
     public float shieldPercentAtSides;
+    public float timeBeforeDevideOnDeath = 1f;
 
     public GameObject bloodEffect;
     
@@ -31,10 +32,16 @@ public class Hitbox : MonoBehaviour {
 
     //The die effect will blow the player (or enemy) up
     List<GameObject> physicalObjects = new List<GameObject>();
-    List<Rigidbody> littleRigidObject = new List<Rigidbody>();
+    List<Rigidbody> instRigidObject = new List<Rigidbody>();
+    List<Rigidbody> bodyPartRigidObject = new List<Rigidbody>();
+    List<GameObject> parentObjectOfSubdivision = new List<GameObject>();
     public float sizeSubdivision;
 
-    void DieEffect(Bullet impactBullet)
+    /*This is the die effect. A simple-complicated effect of subdivide any big part of the player.
+     * Only works for this "marvellous designed" game character ;) Assume that it works of everything made of cubes and have no children under a mesh renderer !
+     * This effect is pretty heavy to process because of the high number of instance done, and should make disappear the part of the body quickly to avoid too much object in the scene, or at least cut the physics.
+     **/
+    void DieEffect(Bullet bullet)
     {
         //First we search all the gameObject that compose the player. We don't take the root.
         SearchAllGameobject(transform.GetChild(0));
@@ -52,13 +59,15 @@ public class Hitbox : MonoBehaviour {
             boxObj.isTrigger = false;
             Rigidbody rigidObj = gameObj.AddComponent<Rigidbody>();
             gameObj.layer = LayerMask.NameToLayer("Default");
-            
+
+            //We disable the box collider and the rigidbody for now
+            boxObj.enabled = false;
+            rigidObj.useGravity = false;
+            rigidObj.isKinematic = true;
+
             //Here's the touchy part : If the object can contains at least 4 subdivision, we'll devide it
             if (gameObj.transform.lossyScale.x * gameObj.transform.lossyScale.y * gameObj.transform.lossyScale.z >= 4f* volumeSubdivision)
             {
-                boxObj.enabled = false;
-                rigidObj.useGravity = false;
-
                 //First we calculate how many subdivision we are going to have on each side x, y, z. We ceil it to avoid a 0 case.
                 Vector3 maxSubdivision = gameObj.transform.lossyScale / sizeSubdivision;
                 maxSubdivision = new Vector3(Mathf.Ceil(maxSubdivision.x), Mathf.Ceil(maxSubdivision.y), Mathf.Ceil(maxSubdivision.z));
@@ -67,6 +76,7 @@ public class Hitbox : MonoBehaviour {
                 //We had the half of a subdivision size to avoid a translation for instancing the small object (if not, the subdivision will be center at the corner, which is not good)
                 Vector3 positionOriginSubdivision = (Vector3.one * -0.5f) + new Vector3(1f / (maxSubdivision.x * 2f), 1f / (maxSubdivision.y * 2f), 1f / (maxSubdivision.z * 2f));
 
+                //We locate the model in another variable (to prevent instancing children)
                 GameObject gameObjModel = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, gameObj);
 
                 //We are rolling all subdivision
@@ -87,57 +97,103 @@ public class Hitbox : MonoBehaviour {
                             //Instancing the mini object
                             GameObject miniObject = Instantiate(gameObjModel, positionSubdivision, gameObj.transform.rotation);
                             
-                            //We set it at the same level of everyone
+                            //We set the local scale (which is the global scale)
                             miniObject.transform.localScale = scaleSubdivision;
 
-                            //We just set it under the parent object to do the localTransform maths.
+                            //We set it under the parent object to conserve physic-links for the beginning
                             //This trick avoid us to do the maths of the correct translation, taking rotation into account
                             miniObject.transform.SetParent(gameObj.transform);
                             miniObject.transform.localPosition = positionSubdivision;
 
-                            littleRigidObject.Add(miniObject.GetComponent<Rigidbody>());
+                            instRigidObject.Add(miniObject.GetComponent<Rigidbody>());
                         }
                     }
                 }
 
+                //This is for the parent, we destroy the empty model
                 Destroy(gameObjModel);
+                parentObjectOfSubdivision.Add(gameObj);
+                //The layer of the parent must be in a layer that exclude the subdivisions, to avoid conflict during forces
+                gameObj.layer = LayerMask.NameToLayer("AvoidMovables");
+
+                //We enable all the physics. Note that it can be tweaked to have a better rag-doll reaction.
                 boxObj.enabled = true;
                 rigidObj.useGravity = true;
+                rigidObj.isKinematic = false;
+                rigidObj.mass = 0.2f;
+                rigidObj.drag = 10f;
+                rigidObj.angularDrag = 0f;
+
+                //To move the parent object, we had a force relative to the bullet position and the bullet physical force
+                rigidObj.AddForceAtPosition((bullet.transform.forward).normalized * bullet.physicalForceBullet ,bullet.transform.position, ForceMode.Force);
                 gameObj.GetComponent<MeshRenderer>().enabled = false;
             }
             else //If it's too small, we don't devide and use the object itself
             {
-                rigidObj.useGravity = true;
+                bodyPartRigidObject.Add(rigidObj);
             }
         }
 
-        //We apply a force into all the small object, like a shockwave, closer the object is from the impact, higher will be the force.
-        foreach(Rigidbody rbo in littleRigidObject)
+        //If there's any parent of subdivision, we find the biggest one and assume that it's the body.
+        if(parentObjectOfSubdivision != null && parentObjectOfSubdivision.Count > 0)
         {
-            float rboDistance = Vector3.Distance(rbo.transform.position, impactBullet.transform.position);
-            if (rboDistance < impactBullet.impactRadius)
+            parentObjectOfSubdivision.Sort(delegate (GameObject go1, GameObject go2)
+            {
+                return (go1.transform.lossyScale.x * go1.transform.lossyScale.y * go1.transform.lossyScale.z).CompareTo(go2.transform.lossyScale.x * go2.transform.lossyScale.y * go2.transform.lossyScale.z);
+            });
+            GameObject biggestObject = parentObjectOfSubdivision.FindLast(c => c);
+
+            //We make children every body parts that are not subdivide
+            foreach (Rigidbody rbo in bodyPartRigidObject)
+            {
+                rbo.transform.SetParent(biggestObject.transform);
+            }
+        }
+
+
+        //We apply a force into all the small object, like a shockwave, closer the object is from the impact, higher will be the force.
+        //Only the object in the shockwave moves. Others stays non-physics for the moment
+        foreach(Rigidbody rbo in instRigidObject)
+        {
+            float rboDistance = Vector3.Distance(rbo.transform.position, bullet.transform.position);
+            if (rboDistance < bullet.impactRadius)
             {
                 InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Graphics, rbo.gameObject);
                 rbo.isKinematic = false;
                 rbo.useGravity = true;
+                rbo.isKinematic = false;
                 rbo.GetComponent<BoxCollider>().enabled = true;
-                rbo.AddForce((rbo.transform.position - impactBullet.transform.position).normalized * impactBullet.forceImpactInRadius.Evaluate(rboDistance / impactBullet.impactRadius) * impactBullet.forceImpact, ForceMode.Impulse);
+                rbo.AddForce((rbo.transform.position - bullet.transform.position).normalized * bullet.forceImpactInRadius.Evaluate(rboDistance / bullet.impactRadius) * bullet.forceImpact, ForceMode.Impulse);
             }
         }
+        instRigidObject.RemoveAll(c => c.useGravity);
+        instRigidObject.AddRange(bodyPartRigidObject);
 
-        Invoke("EnableAllRigidbodyPhysics", 0.5f);
-
-        
+        //We enable physics after a shot period of time
+        Invoke("EnableAllRigidbodyPhysics", timeBeforeDevideOnDeath);
     }
 
+    //This enabled all the rigidbody that hasn't moves in the die effect
     void EnableAllRigidbodyPhysics()
     {
-        foreach (Rigidbody rbo in littleRigidObject)
+        foreach (Rigidbody rbo in instRigidObject)
         {
+            //We conserve the velocity of the parent, best effect ;)
+            rbo.velocity = rbo.transform.parent.GetComponent<Rigidbody>().velocity;
+            rbo.angularVelocity = rbo.transform.parent.GetComponent<Rigidbody>().angularVelocity;
+
+            //Physics activation ! o(-_o)==o
             InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Graphics, rbo.gameObject);
             rbo.isKinematic = false;
             rbo.useGravity = true;
+            rbo.isKinematic = false;
             rbo.GetComponent<BoxCollider>().enabled = true;
+        }
+
+        //Destoying all empty parents
+        foreach(GameObject po in parentObjectOfSubdivision)
+        {
+            Destroy(po);
         }
         
         //We destroy the root object, to prevent all player/enemy interaction
