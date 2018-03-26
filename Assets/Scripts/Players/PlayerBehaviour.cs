@@ -32,16 +32,13 @@ public class PlayerBehaviour : MonoBehaviour {
         if (currentCamera == null) currentCamera = Camera.main;
 
         //Util to calculate input direction regarding the rotation of the camera
-        cameraDirection = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Utils, 
-            new GameObject("CameraDirection")).transform;
+        cameraDirection = InstanceManager.instance.CreateEmptyObject(InstanceManager.InstanceType.Utils, "CameraDirection").transform;
 
         //Util for applying a smooth rotation to player
-        playerRotation = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Utils,
-            new GameObject("PlayerRotation")).transform;
+        playerRotation = InstanceManager.instance.CreateEmptyObject(InstanceManager.InstanceType.Utils, "PlayerRotation").transform;
 
         //Setting up the plane to catch the mouse direction for aiming
-        mousePlaneTransform = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Utils,
-            new GameObject("Raycatcher"));
+        mousePlaneTransform = InstanceManager.instance.CreateEmptyObject(InstanceManager.InstanceType.Utils, "Raycatcher");
 
         mousePlaneTransform.transform.localScale = Vector3.right * 100f + Vector3.up * 0.01f + Vector3.forward * 100f;
         BoxCollider box = mousePlaneTransform.AddComponent<BoxCollider>();
@@ -117,8 +114,8 @@ public class PlayerBehaviour : MonoBehaviour {
     {
         if (Input.GetButton("Aim"))
         {
-            if (Input.GetJoystickNames().Length == 0)
-            {
+            //if (Input.GetJoystickNames().Length == 0)
+            //{
                 //If there's no joystick, the mouse pointer is helping aiming
                 //We just do a raycast from the mouse to the plane we set up at Start()
                 rayMouseToFloor = currentCamera.ScreenPointToRay(Input.mousePosition);
@@ -149,12 +146,12 @@ public class PlayerBehaviour : MonoBehaviour {
                     }
                     
                 }
-            }
+            /*}
             else
             {
                 //It's basicly stick direction calculation without raycasts. We allow the player to shoot against the wall if we want to.
                 transform.LookAt(transform.position + (cameraDirection.right * Input.GetAxisRaw("Horizontal")) + cameraDirection.forward * Input.GetAxisRaw("Vertical"));
-            }
+            }*/
 
             //Shoot
             if (Input.GetButtonDown("Shoot"))

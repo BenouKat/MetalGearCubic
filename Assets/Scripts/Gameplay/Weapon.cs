@@ -86,7 +86,7 @@ public class Weapon : Item {
     public void sendBullet()
     {
         //Fire ! :)
-        InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, shootEffect, canonPosition.position, canonPosition.rotation);
+        if(shootEffect != null) InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, shootEffect, canonPosition.position, canonPosition.rotation);
         InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, bullet, canonPosition.position, canonPosition.rotation);
     }
 

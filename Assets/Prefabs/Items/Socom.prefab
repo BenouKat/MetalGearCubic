@@ -615,6 +615,8 @@ MonoBehaviour:
   collectibleModel: {fileID: 1811571872560172}
   handledModel: {fileID: 1674958576229934}
   canonPosition: {fileID: 4025834342371158}
+  shootEffect: {fileID: 0}
+  bullet: {fileID: 1208685809343542, guid: 81e45eaec5b71f04f9b35c58e35dc11f, type: 2}
   currentAmmo: 7
   currentMagazine: 4
   maxAmmoPerMagazine: 7

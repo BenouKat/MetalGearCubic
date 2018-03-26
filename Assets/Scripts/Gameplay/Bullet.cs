@@ -7,6 +7,9 @@ public class Bullet : MonoBehaviour {
     Rigidbody bulletRigidbody;
 
     public float damage;
+    public float impactRadius;
+    public float forceImpact;
+    public AnimationCurve forceImpactInRadius = new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 0));
 
     public float forceBullet;
     public float chanceBounce;
@@ -119,8 +122,10 @@ public class Bullet : MonoBehaviour {
             Vector3 newBulletDirection = Vector3.Reflect(transform.forward, info.normal);
             transform.position = info.point;
             transform.forward = newBulletDirection;
+            transform.LookAt(transform.position + transform.forward);
 
-            //We unsure that the collision has not change the angular velocity. Note that the bullet must have no freedom degrees of rotation.
+            //We unsure that the collision has not change the angular velocity and start with 0 velocity. Note that the bullet must have no freedom degrees of rotation.
+            bulletRigidbody.velocity = Vector3.zero;
             bulletRigidbody.angularVelocity = Vector3.zero;
 
             //We add the force again, but in the right direction this time !
@@ -141,6 +146,7 @@ public class Bullet : MonoBehaviour {
                 wallHitInst.transform.forward = info.normal;
             }
             SoundManager.instance.play("Impact", info.point, SoundManager.AudioType.SOUND);
+            Destroy(gameObject);
         }
     }
 }

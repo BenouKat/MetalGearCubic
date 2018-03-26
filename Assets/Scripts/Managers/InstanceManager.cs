@@ -48,6 +48,20 @@ public class InstanceManager : MonoBehaviour {
         return InstanceObject(type, model, Vector3.zero, Quaternion.identity);
     }
 
+    public GameObject CreateEmptyObject(InstanceType type, string name, Vector3 position, Quaternion rotation)
+    {
+        tempInstance = new GameObject(name);
+        tempInstance.transform.position = position;
+        tempInstance.transform.rotation = rotation;
+        MoveTo(type, tempInstance);
+        return tempInstance;
+    }
+
+    public GameObject CreateEmptyObject(InstanceType type, string name)
+    {
+        return CreateEmptyObject(type, name, Vector3.zero, Quaternion.identity);
+    }
+
     public void MoveTo(InstanceType type, GameObject model)
     {
         model.transform.SetParent(instanceTargets.Find(c => c.type == type).target);
