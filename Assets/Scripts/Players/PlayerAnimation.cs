@@ -13,7 +13,6 @@ public class PlayerAnimation : MonoBehaviour {
 	void Start () {
         if (playerBehaviour == null) playerBehaviour = GetComponent<PlayerBehaviour>();
         if (playerAnimator == null) playerAnimator = transform.GetChild(0).GetComponent<Animator>();
-
     }
 
     // Update is called once per frame
@@ -24,7 +23,6 @@ public class PlayerAnimation : MonoBehaviour {
 
         if (playerBehaviour.GetEquipedWeapon() != null)
         {
-            
             playerAnimator.SetInteger("WeaponMode", (int)playerBehaviour.GetEquipedWeapon().weaponType);
             playerAnimator.SetBool("Aim", Input.GetButton("Aim"));
 

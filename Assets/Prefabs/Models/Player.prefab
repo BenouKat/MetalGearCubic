@@ -1098,30 +1098,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9d61ff80adfebf4ba5b194bf2b05f73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxLife: 10
-  shieldPercentAtSides: 0
+  maxLife: 100
+  shieldPercentAtSides: 0.5
   bloodEffect: {fileID: 0}
+  timeBeforeDivideOnDeath: 0.3
+  bloodMaterial: {fileID: 2100000, guid: 5b8729e77f991624f8cb5acc03a27e58, type: 2}
+  body: {fileID: 1791766593869534}
+  timeRotationIn: 0.07
+  timeRotationOut: 0.3
+  forceRotation: 30
   sizeSubdivision: 0.1
-  radiusOfImpact: 0.25
-  centerForceImpact: 200
-  forceImpactInRadius:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 2
-      time: 0
-      value: 1
-      inSlope: -2.0672266
-      outSlope: -2.0672266
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 0
 --- !u!114 &114724128854347310
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -59,7 +59,6 @@ public class Weapon : Item {
                 }
                 else
                 {
-                    Debug.Log(Time.time);
                     //Lost an ammo when the shoot is valid
                     currentAmmo--;
                     lastAction = Time.time;
@@ -77,12 +76,17 @@ public class Weapon : Item {
         triggerPulled = false;
     }
 
-    //Used in MGS 1 mode to point the canon to the right direction, relative to the mouse distance
+    //Point the canon to the right direction, relative to what has been targeted in player behavior
     public void CanonLook(Vector3 pointToLook)
     {
         canonPosition.LookAt(pointToLook, Vector3.up);
     }
 
+    public void CanonLookForward()
+    {
+        canonPosition.LookAt(canonPosition.position + canonPosition.forward);
+    }
+    
     public void sendBullet()
     {
         //Fire ! :)

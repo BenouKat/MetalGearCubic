@@ -114,8 +114,8 @@ public class PlayerBehaviour : MonoBehaviour {
     {
         if (Input.GetButton("Aim"))
         {
-            //if (Input.GetJoystickNames().Length == 0)
-            //{
+            if (Input.GetJoystickNames().Length == 0)
+            {
                 //If there's no joystick, the mouse pointer is helping aiming
                 //We just do a raycast from the mouse to the plane we set up at Start()
                 rayMouseToFloor = currentCamera.ScreenPointToRay(Input.mousePosition);
@@ -129,29 +129,14 @@ public class PlayerBehaviour : MonoBehaviour {
                     playerRotation.LookAt(castInfo.point);
                     transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
 
-                    //We are just doing security here, if the point is too close from the canon or the player, we just shoot right away.
-                    //It prevent the bullet to have a too strong angle, or the bullet to go backside (!)
-                    if(Vector3.Distance(castInfo.point, GetEquipedWeapon().canonPosition.position) >= collisionDistance
-                        && Vector3.Distance(castInfo.point, transform.position) >= collisionDistance)
-                    {
-                        //If the mouse is at a good distance, we aim the canon into the cast point.
-                        //Why ? Because we ensure that wherever the canon point to, we aim the standard height for the player.
-                        //This way, the bullet will not miss the target by going under or above it.
-                        GetEquipedWeapon().CanonLook(castInfo.point);
-                    }
-                    else
-                    {
-                        //If we are too close, we just shoot in the direction of the player
-                        GetEquipedWeapon().CanonLook(GetEquipedWeapon().canonPosition.position + transform.forward);
-                    }
-                    
+                    GetEquipedWeapon().CanonLookForward();
                 }
-            /*}
+            }
             else
             {
                 //It's basicly stick direction calculation without raycasts. We allow the player to shoot against the wall if we want to.
                 transform.LookAt(transform.position + (cameraDirection.right * Input.GetAxisRaw("Horizontal")) + cameraDirection.forward * Input.GetAxisRaw("Vertical"));
-            }*/
+            }
 
             //Shoot
             if (Input.GetButtonDown("Shoot"))

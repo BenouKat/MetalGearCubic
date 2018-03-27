@@ -66,4 +66,13 @@ public class InstanceManager : MonoBehaviour {
     {
         model.transform.SetParent(instanceTargets.Find(c => c.type == type).target);
     }
+
+    public bool IsRootObject(Transform t)
+    {
+        foreach(InstanceContener ic in instanceTargets)
+        {
+            if (t.parent == ic.target) return true;
+        }
+        return false;
+    }
 }
