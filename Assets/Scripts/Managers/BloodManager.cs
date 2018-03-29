@@ -28,17 +28,23 @@ public class BloodManager : MonoBehaviour {
     float timeBeforeStartDisappear;
     public Color dryBloodColor;
     public float timeBloodDry;
-	
-	// Update is called once per frame
-	void Update () {
+
+    //Just object pooling
+    BloodTimer bt;
+    // Update is called once per frame
+    void Update () {
+
+        //If there's some blood materials running
 		if(bloodTimes.Count > 0)
         {
             for(int i=0; i<bloodTimes.Count; i++)
             {
-                BloodTimer bt = bloodTimes[i];
+                //We set the color of the shared material to dry over time
+                bt = bloodTimes[i];
                 bt.bloodMaterial.SetColor(bt.colorID, Color.Lerp(bt.startColor, dryBloodColor, (Time.time - bt.timeStart) / timeBloodDry));
                 if(Time.time >= bt.timeStart + timeBloodDry)
                 {
+                    //When it's done, we remove it from the list
                     bloodTimes.Remove(bt);
                     i--;
                 }
@@ -51,6 +57,7 @@ public class BloodManager : MonoBehaviour {
         timeBeforeStartDisappear = time;
     }
 
+    //Blood material is a material cube of red color that change color over time
     public void registerNewBloodMaterial(Material bloodMaterial, string colorID = "_Color")
     {
         lastBloodMaterial = bloodMaterial;
@@ -64,11 +71,13 @@ public class BloodManager : MonoBehaviour {
         bloodTimes.Add(timer);
     }
 
+    //Blood object is blood cubes
     public void registerNewBloodObject(BloodObject bloodObject)
     {
         bloodObject.Init(timeBloodDisappear, timeBeforeStartDisappear, lastBloodMaterial);
     }
 
+    //Body part is not blood cubes, they last shorter than the blood
     public void registerNewBodyPartObject(BloodObject bloodObject)
     {
         bloodObject.Init(timeBodyDisappear, timeBeforeStartDisappear, null);

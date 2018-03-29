@@ -213,6 +213,7 @@ public class PlayerBehaviour : MonoBehaviour {
             }
         }
 
+        //Same for vertical hit
         if (!Mathf.Approximately(Input.GetAxisRaw("Vertical"), 0f))
         {
             if (!Physics.Raycast(transform.position + cameraDirection.right * decalRaycastDistance, cameraDirection.forward * Input.GetAxisRaw("Vertical"), collisionDistance, GetCollisionLayers())

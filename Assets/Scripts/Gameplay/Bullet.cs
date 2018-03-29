@@ -55,6 +55,11 @@ public class Bullet : MonoBehaviour {
             {
                 targetedHitbox = info.collider.GetComponent<Hitbox>();
                 futurHitPoint = info.point;
+            }else if (Physics.Raycast(transform.position, transform.forward, out info, 1000f, 1 << LayerMask.NameToLayer("Unmovable")))
+            {
+                //If there's no players in the way, we target the wall
+                targetedHitbox = null;
+                futurHitPoint = info.point;
             }
             oldBulletPosition = transform.position;
 
@@ -78,6 +83,22 @@ public class Bullet : MonoBehaviour {
                     futurHitPoint = info.point;
                 }
             }
+            else if (Physics.Raycast(oldBulletPosition, transform.forward, out info, 1000f, 1 << LayerMask.NameToLayer("Unmovable")))
+            {
+                //We just check we are targeting a wall on this frame
+                if (targetedHitbox == null)
+                {
+                    //If a player or enemy is in the way, we have touched it !
+                    transform.position = info.point;
+                    OnWallCollision(info);
+                }
+                else
+                {
+                    //We change the target to nothing and not update oldposition to redone the calc newt frame
+                    targetedHitbox = null;
+                    futurHitPoint = info.point;
+                }
+            }
             else
             {
                 //Else if there's no one in the way, we reset the destination
@@ -93,61 +114,57 @@ public class Bullet : MonoBehaviour {
     }
 
     //If it's a collision, it's necessary a wall or another solid object where the bullet is stopped
-    private void OnCollisionEnter(Collision hitObject)
+    private void OnWallCollision(RaycastHit raycastInfo)
     {
         if (bounceCount < maxBounce && Random.Range(0f, 1f) <= chanceBounce)
         {
-            RecalcTrajectory(hitObject.collider.gameObject.layer);
+            RecalcTrajectory(raycastInfo);
             bounceCount++;
         }
         else
         {
-            DestroyBulletOnWall(hitObject.collider.gameObject.layer);
+            DestroyBulletOnWall(raycastInfo);
         }
     }
 
-    public void RecalcTrajectory(int layerObject)
+    public void RecalcTrajectory(RaycastHit info)
     {
-        //We are doing a raycast here to calculate the normal to the impact, way more easier than manage Collision.ContactPoint
-        if (Physics.Raycast(transform.position - transform.forward * 1f, transform.forward, out info, 10f, 1 << layerObject))
+        //We are using the raycast info here to calculate the normal to the impact, way more easier than manage Collision.ContactPoint
+        //Display wall impact and make a sound
+        if(wallBounce != null)
         {
-            //Display wall impact and make a sound
-            if(wallBounce != null)
-            {
-                GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, wallBounce, info.point, Quaternion.identity);
-                wallHitInst.transform.forward = info.normal;
-            }
-            SoundManager.instance.play("Bounce", info.point, SoundManager.AudioType.SOUND);
-
-            //To calculate the bounce, we just reflect the initial bullet forward to the hit surface normal
-            Vector3 newBulletDirection = Vector3.Reflect(transform.forward, info.normal);
-            transform.position = info.point;
-            transform.forward = newBulletDirection;
-            transform.LookAt(transform.position + transform.forward);
-
-            //We unsure that the collision has not change the angular velocity and start with 0 velocity. Note that the bullet must have no freedom degrees of rotation.
-            bulletRigidbody.velocity = Vector3.zero;
-            bulletRigidbody.angularVelocity = Vector3.zero;
-
-            //We add the force again, but in the right direction this time !
-            bulletRigidbody.AddForce(transform.forward * forceSpeedBullet, ForceMode.VelocityChange);
-            ResetBulletDestination();
+            GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, wallBounce, info.point, Quaternion.identity);
+            wallHitInst.transform.forward = info.normal;
         }
+        SoundManager.instance.play("Bounce", info.point, SoundManager.AudioType.SOUND);
+
+        //To calculate the bounce, we just reflect the initial bullet forward to the hit surface normal
+        Vector3 newBulletDirection = Vector3.Reflect(transform.forward, info.normal);
+        transform.position = info.point;
+        transform.forward = newBulletDirection;
+        transform.LookAt(transform.position + transform.forward);
+
+        //We unsure that the collision has not change the angular velocity and start with 0 velocity. Note that the bullet must have no freedom degrees of rotation.
+        bulletRigidbody.velocity = Vector3.zero;
+        bulletRigidbody.angularVelocity = Vector3.zero;
+
+        //We add the force again, but in the right direction this time !
+        bulletRigidbody.AddForce(transform.forward * forceSpeedBullet, ForceMode.VelocityChange);
+        ResetBulletDestination();
+        
     }
 
     //Basicly same as RecalcTrajetory in the logical, just replacing the effect and the sound played
-    public void DestroyBulletOnWall(int layerObject)
+    public void DestroyBulletOnWall(RaycastHit info)
     {
-        if (Physics.Raycast(transform.position - transform.forward*1f, transform.forward, out info, 10f, 1 << layerObject))
+        //Display wall impact and make a sound
+        if(wallHit != null)
         {
-            //Display wall impact and make a sound
-            if(wallHit != null)
-            {
-                GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Graphics, wallHit, info.point, Quaternion.identity);
-                wallHitInst.transform.forward = info.normal;
-            }
-            SoundManager.instance.play("Impact", info.point, SoundManager.AudioType.SOUND);
-            Destroy(gameObject);
+            GameObject wallHitInst = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Graphics, wallHit, info.point, Quaternion.identity);
+            wallHitInst.transform.forward = info.normal;
         }
+        SoundManager.instance.play("Impact", info.point, SoundManager.AudioType.SOUND);
+        Destroy(gameObject);
+        
     }
 }

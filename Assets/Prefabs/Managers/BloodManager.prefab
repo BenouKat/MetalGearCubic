@@ -52,6 +52,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeBodyDisappear: 10
-  timeBloodDisappear: 40
-  dryBloodColor: {r: 0.44852942, g: 0, b: 0, a: 1}
-  timeBloodDry: 10
+  timeBloodDisappear: 60
+  dryBloodColor: {r: 0.58965516, g: 0, b: 0, a: 1}
+  timeBloodDry: 20

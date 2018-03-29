@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 23699310268407378}
   - component: {fileID: 114765202707339480}
   - component: {fileID: 54171011571178488}
+  - component: {fileID: 114422627039873672}
   m_Layer: 0
   m_Name: Bullet
   m_TagString: Untagged
@@ -98,8 +99,8 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 0
-  m_CollisionDetection: 2
+  m_Constraints: 112
+  m_CollisionDetection: 1
 --- !u!65 &65111436978656172
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -112,6 +113,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114422627039873672
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1208685809343542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34910d92f0898494697ed488ef0cac85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lifetime: 10
 --- !u!114 &114765202707339480
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -123,7 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d59d32a6f4efb894d97b6503a8c6c981, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 20
+  damage: 120
   impactRadius: 0.3
   forceImpact: 50
   forceImpactInRadius:

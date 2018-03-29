@@ -67,6 +67,13 @@ public class Hitbox : MonoBehaviour {
 
     void HitEffect(Bullet bullet)
     {
+        //If a hit effect is already running, we set back the rotation to the origin point, to avoid rotation drifting
+        if (enableHitAnimation)
+        {
+            body.transform.localRotation = startRotation.localRotation;
+            Destroy(startRotation.gameObject);
+            Destroy(rotationTarget.gameObject);
+        }
         //Calculate the rotation done to the body by the bullet
         bulletLocalPosition = bullet.transform.position - transform.position;
         rotationApplied = Vector3.zero;
@@ -130,10 +137,10 @@ public class Hitbox : MonoBehaviour {
         if(enableHitAnimation)
         {
             timeCurrentRotation += Time.deltaTime;
-            if (timeCurrentRotation < timeRotationIn)
+            if (timeCurrentRotation < timeRotationIn) //Ping !
             {
                 body.transform.localRotation = Quaternion.Slerp(startRotation.localRotation, rotationTarget.localRotation, timeCurrentRotation / timeRotationIn);
-            }else if(timeCurrentRotation < timeRotationIn + timeRotationOut)
+            }else if(timeCurrentRotation < timeRotationIn + timeRotationOut) //Pong !
             {
                 body.transform.localRotation = Quaternion.Slerp(rotationTarget.localRotation, startRotation.localRotation, (timeCurrentRotation-timeRotationIn) / timeRotationOut);
             }
