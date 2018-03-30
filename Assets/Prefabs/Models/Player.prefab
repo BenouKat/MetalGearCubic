@@ -1119,6 +1119,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6910fb075ad321644add21755cb43522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speedAgainstWall: 0.3
   maxSpeed: 5
   speedRotationSmooth: 0.5
   collisionDistance: 0.5
