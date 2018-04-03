@@ -8,7 +8,7 @@ public class PlayerAnimation : MonoBehaviour {
     public PlayerBehaviour playerBehaviour;
 
     public float[] walkingModeSpeed;
-
+    bool isCollidingWithWall;
 	// Use this for initialization
 	void Start () {
         if (playerBehaviour == null) playerBehaviour = GetComponent<PlayerBehaviour>();
@@ -20,6 +20,14 @@ public class PlayerAnimation : MonoBehaviour {
     {
         playerAnimator.SetInteger("WalkingMode", VelocityToWalkingMode(playerBehaviour.GetPlayerVelocity()));
         playerAnimator.SetBool("Equiped", playerBehaviour.GetEquipedWeapon() != null);
+
+        isCollidingWithWall = playerBehaviour.GetPlayerWallMovement() >= PlayerBehaviour.PlayerWallMovement.COLLIDE;
+        playerAnimator.SetBool("AgainstAWall", isCollidingWithWall);
+        if(isCollidingWithWall)
+        {
+            playerAnimator.SetBool("OrientedRight", playerBehaviour.isPlayerMovingRight());
+            playerAnimator.SetBool("Look", playerBehaviour.GetPlayerWallMovement() == PlayerBehaviour.PlayerWallMovement.LOOK);
+        }
 
         if (playerBehaviour.GetEquipedWeapon() != null)
         {
@@ -68,7 +76,7 @@ public class PlayerAnimation : MonoBehaviour {
     //Convert the player velocity into a walking state
     int VelocityToWalkingMode(float velocity)
     {
-        for(int i=0; i<walkingModeSpeed.Length; i++)
+        for(int i=1; i<walkingModeSpeed.Length; i++)
         {
             if (walkingModeSpeed[i] >= velocity) return i - 1;
         }

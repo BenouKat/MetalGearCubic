@@ -10,18 +10,22 @@ public class PlayerBehaviour : MonoBehaviour {
     public float speedRotationSmooth = 0.5f;
     public float collisionDistance = 0.7f;
     public float decalRaycastDistance = 0.35f;
+    public float wallDirectionDeadZone = 0.01f;
 
     //Inside variables
+    //Player direction
     Camera currentCamera;
     Transform cameraDirection;
     Transform playerRotation;
     Vector3 cameraDirectionPosition;
     Vector3 stickDirection;
-    float currentSpeed;
+    Vector3 stickNormalDirection;
 
+    //Colliding wall
     public enum PlayerWallMovement { NONE, COLLIDE, MOVE, LOOK }
     PlayerWallMovement playerWallMovement = PlayerWallMovement.NONE;
     Vector3 wallDirection;
+    Vector3 wallRightDirection;
 
     [Header("Item list")]
     public List<Item> playerItems;
@@ -87,16 +91,27 @@ public class PlayerBehaviour : MonoBehaviour {
 
             //Player move in the direction and write velocity
             //If the player is against a wall, we reduce its speed
-            speedAgainstWall = isCollidingWithWall() ? speedAgainstWall : maxSpeed;
-            transform.position += stickDirection * Time.deltaTime * speedAgainstWall;
-            playerVelocity = Vector3.Distance(Vector3.zero, stickDirection * speedAgainstWall);
+            switch(playerWallMovement)
+            {
+                case PlayerWallMovement.NONE:
+                    transform.position += stickDirection * Time.deltaTime * maxSpeed;
+                    playerVelocity = Vector3.Distance(Vector3.zero, stickDirection * maxSpeed);
+                    break;
+                case PlayerWallMovement.MOVE:
+                    transform.position += stickDirection * Time.deltaTime * speedAgainstWall;
+                    playerVelocity = Vector3.Distance(Vector3.zero, stickDirection * speedAgainstWall);
+                    break;
+                default:
+                    playerVelocity = 0f;
+                    break;
+            }
 
             //Orientation regarding if the player is against a wall or not
             playerRotation.position = transform.position;
-            if(isCollidingWithWall())
+            if(playerWallMovement >= PlayerWallMovement.COLLIDE)
             {
                 //The player turns his back on the wall
-                playerRotation.LookAt(transform.position - wallDirection);
+                playerRotation.LookAt(transform.position + wallDirection);
             }
             else
             {
@@ -217,89 +232,120 @@ public class PlayerBehaviour : MonoBehaviour {
         }
     }
 
-    //Refresh stick position related to the camera orientation
-    enum HitWallTestDirection { HOR_R, HOR_L, VER_R, VER_L }
-    bool[] hitWallTest = new bool[4];
+
+    bool frontDetection, rightDetection, leftDetection;
+    RaycastHit frontHit, rightHit, leftHit;
+    //Refresh stick position related to the camera orientation.
+    //Most of this is basicly a way to redone the Rigidbody.MovePosition, because I never trust fucking physics.
+    //Use 3 very short raycast at least, 4 at worst. Pretty optimized.
     void RefreshStickDirection()
     {
-        stickDirection = Vector3.zero;
-        playerWallMovement = PlayerWallMovement.NONE;
-        for (int i = 0; i < hitWallTest.Length; i++) hitWallTest[i] = false;
+        //First, let's calculate the stick orientation and his normal
+        stickDirection = (cameraDirection.right * Input.GetAxisRaw("Horizontal")) + (cameraDirection.forward * Input.GetAxisRaw("Vertical"));
+        stickNormalDirection = (cameraDirection.forward * Input.GetAxisRaw("Horizontal")) - (cameraDirection.right * Input.GetAxisRaw("Vertical"));
 
-        //We test physics on the two axes to prevent wall hit and redirect the player in the best direction along the wall
-        if (!Mathf.Approximately(Input.GetAxisRaw("Horizontal"), 0f))
+        //This is a way to have a stickDirection point that is inside a circle, and not a square.
+        if (stickDirection.magnitude > 1f)
         {
-            //We do 2 hit test, separated by a short distance, on the left and on the right of the player
-            hitWallTest[(int)HitWallTestDirection.HOR_R] = HitWallTest("Horizontal", cameraDirection.right, cameraDirection.forward);
-            hitWallTest[(int)HitWallTestDirection.HOR_L] = HitWallTest("Horizontal", cameraDirection.right, -cameraDirection.forward);
-
-            //Pass test is okay, the player can move in the direction !
-            if (!hitWallTest[(int)HitWallTestDirection.HOR_R] && !hitWallTest[(int)HitWallTestDirection.HOR_L])
-            {
-                stickDirection += cameraDirection.right * Input.GetAxisRaw("Horizontal");
-            }
-            else
-            {
-                //Eehh, the player is against a wall
-                if(hitWallTest[(int)HitWallTestDirection.HOR_R] && hitWallTest[(int)HitWallTestDirection.HOR_L])
-                {
-                    playerWallMovement = PlayerWallMovement.COLLIDE;
-                }
-                else //If only one of the 2 hit wall test has passed, it means that we are at the edge of a wall
-                {
-                    playerWallMovement = PlayerWallMovement.LOOK;
-                }
-                wallDirection = cameraDirection.right * Mathf.Sign(Input.GetAxisRaw("Horizontal"));
-            }
+            stickDirection.Normalize();
+            stickNormalDirection.Normalize();
         }
 
-        //Same for vertical hit, as its after the horizontal, it always have the priority
-        if (!Mathf.Approximately(Input.GetAxisRaw("Vertical"), 0f))
-        {
-            //Same thing
-            hitWallTest[(int)HitWallTestDirection.VER_R] = HitWallTest("Vertical", cameraDirection.forward, cameraDirection.right);
-            hitWallTest[(int)HitWallTestDirection.VER_L] = HitWallTest("Vertical", cameraDirection.forward, -cameraDirection.right);
+        Debug.DrawLine(transform.position, transform.position + (stickDirection*collisionDistance), Color.blue, Time.deltaTime, false);
+        Debug.DrawLine(transform.position, transform.position + (stickNormalDirection * collisionDistance), Color.gray, Time.deltaTime, false);
+        
+        //Wall is detected in front of the user, or on the right, or on the left, in this order
+        //If the player is already against a wall, we double the collision distance to check out the wall collision
+        frontDetection = HitWallTest(stickDirection, Vector3.zero, playerWallMovement == PlayerWallMovement.NONE ? collisionDistance : collisionDistance * 2f, out frontHit, Color.red);
+        rightDetection = HitWallTest(stickDirection, stickNormalDirection, collisionDistance, out rightHit, Color.magenta);
+        leftDetection = HitWallTest(stickDirection, -stickNormalDirection, collisionDistance, out leftHit, Color.cyan);
 
-            if (!hitWallTest[(int)HitWallTestDirection.VER_R] && !hitWallTest[(int)HitWallTestDirection.VER_L])
+        //If one of these detection has been made
+        if (frontDetection || rightDetection || leftDetection)
+        {
+            //If the player is not against a wall, we do a second raycast but longer to catch the wall
+            if(playerWallMovement == PlayerWallMovement.NONE)
+                frontDetection = HitWallTest(stickDirection, Vector3.zero, collisionDistance*2f, out frontHit, Color.red);
+
+            //If there's a wall in front of the player, we get the normal and the right vector of the wall
+            if (frontDetection)
             {
-                //Difference here : If the horizontal position is at the edge of a wall, it means we stop the player vertically but only in the direction of the edge
-                if(playerWallMovement != PlayerWallMovement.LOOK 
-                    || (hitWallTest[(int)HitWallTestDirection.HOR_R] && Mathf.Sign(Input.GetAxisRaw("Vertical")) > 0)
-                    || (hitWallTest[(int)HitWallTestDirection.HOR_L] && Mathf.Sign(Input.GetAxisRaw("Vertical")) < 0))
+                wallDirection = frontHit.normal;
+            }
+            wallRightDirection = Vector3.Cross(wallDirection, Vector3.up);
+
+            //Projecting the stick direction into the wall to know in which direction the player can go
+            stickDirection = Vector3.ProjectOnPlane(stickDirection, wallDirection);
+            
+            //If the stick is nearly the opposite of the wall, we notice that the player collide with the wall
+            if (Vector3.Distance(stickDirection, Vector3.zero) <= wallDirectionDeadZone) 
+            {
+                stickDirection = Vector3.zero;
+                //If there's a front detection, it's a wall, if not, it's just a corner, the player won't turn against the wall
+                playerWallMovement = frontDetection ? PlayerWallMovement.COLLIDE : PlayerWallMovement.NONE;
+                
+            //Else, if the player was already against a wall...
+            }else if(playerWallMovement != PlayerWallMovement.NONE)
+            {
+                //Wall left and right are not the same, we are at a corner, we stop the player
+                if ((rightDetection && Vector3.Angle(stickDirection, wallRightDirection) > 90f && rightHit.normal != wallDirection)
+                || (leftDetection && Vector3.Angle(stickDirection, wallRightDirection) < 90f && leftHit.normal != wallDirection))
                 {
-                    stickDirection += cameraDirection.forward * Input.GetAxisRaw("Vertical");
+                    stickDirection = Vector3.zero;
+                    playerWallMovement = PlayerWallMovement.COLLIDE;
+                }
+                //If we are moving along the wall, we test if we are at a side of a wall or not. We need to test the current direction to prevent player being stucked at wall side.
+                else if ((Vector3.Angle(stickDirection, wallRightDirection) < 90f && !HitWallTest(-wallDirection, wallRightDirection, collisionDistance * 2f, Color.yellow))
+                        || (Vector3.Angle(stickDirection, wallRightDirection) > 90f && !HitWallTest(-wallDirection, -wallRightDirection, collisionDistance * 2f, Color.yellow)))
+                {
+                    //If there's a hit missing, the player is looking on the side of the wall
+                    playerWallMovement = PlayerWallMovement.LOOK;
+                }
+
+                //Else the player is moving along the wall
+                else
+                {
+                    
+                    playerWallMovement = PlayerWallMovement.MOVE;
                 }
             }
+
+            //If the player wasn't already against a wall, we let the player run along the wall (without being against it)
             else
             {
-                //The player is against a wall
-                if (hitWallTest[(int)HitWallTestDirection.VER_R] && hitWallTest[(int)HitWallTestDirection.VER_L])
+                //Huh ! A Wild wall angle appears ! If both of the right and left cast has touch, we have nowhere to go
+                if(rightDetection && leftDetection)
                 {
-                    playerWallMovement = PlayerWallMovement.COLLIDE;
+                    stickDirection = Vector3.zero;
                 }
                 else
                 {
-                    //Same difference here : If on the horizontal test the player has been allowed to move, we cancel this because we are on the edge of a wall in the vertical direction
-                    if(!(playerWallMovement != PlayerWallMovement.NONE
-                        || (hitWallTest[(int)HitWallTestDirection.VER_R] && Mathf.Sign(Input.GetAxisRaw("Horizontal")) > 0)
-                        || (hitWallTest[(int)HitWallTestDirection.VER_L] && Mathf.Sign(Input.GetAxisRaw("Horizontal")) < 0)))
-                    {
-                        stickDirection = Vector3.zero;
-                    }
-                    playerWallMovement = PlayerWallMovement.LOOK;
+                    //We normalize again the stick direction (maybe shorten by the projection)
+                    stickDirection.Normalize();
                 }
-                wallDirection = cameraDirection.forward * Mathf.Sign(Input.GetAxisRaw("Vertical"));
+                playerWallMovement = PlayerWallMovement.NONE;
             }
         }
 
-        //This is a way to have a stickDirection point that is inside a circle, and not a square. This prevent the player to go beyond max speed.
-        if (stickDirection.magnitude > 1f) stickDirection.Normalize();
+        //No detection ? All right !
+        else{
+            playerWallMovement = PlayerWallMovement.NONE;
+        }
+
+        Debug.DrawLine(transform.position, transform.position + (stickDirection * collisionDistance), Color.green, Time.deltaTime, false);
+
     }
 
-    public bool HitWallTest(string inputAxis, Vector3 direction, Vector3 decalDirection)
+    public bool HitWallTest(Vector3 direction, Vector3 decalDirection, float distance, out RaycastHit info, Color debugColor)
     {
-        Debug.DrawLine(transform.position + (decalDirection * decalRaycastDistance), (transform.position + (decalDirection * decalRaycastDistance)) + (direction * Input.GetAxisRaw(inputAxis) * collisionDistance), Color.red, Time.deltaTime, false);
-        return Physics.Raycast(transform.position + (decalDirection * decalRaycastDistance), direction * Input.GetAxisRaw(inputAxis), collisionDistance, GetCollisionLayers());
+        Debug.DrawLine(transform.position + (decalDirection * decalRaycastDistance), (transform.position + (decalDirection * decalRaycastDistance)) + (direction * distance), debugColor, Time.deltaTime, false);
+        return Physics.Raycast(transform.position + (decalDirection * decalRaycastDistance), direction, out info, distance, GetCollisionLayers());
+    }
+
+    public bool HitWallTest(Vector3 direction, Vector3 decalDirection, float distance, Color debugColor)
+    {
+        Debug.DrawLine(transform.position + (decalDirection * decalRaycastDistance), (transform.position + (decalDirection * decalRaycastDistance)) + (direction * distance), debugColor, Time.deltaTime, false);
+        return Physics.Raycast(transform.position + (decalDirection * decalRaycastDistance), direction, distance, GetCollisionLayers());
     }
 
     int GetCollisionLayers()
@@ -313,9 +359,14 @@ public class PlayerBehaviour : MonoBehaviour {
         return playerVelocity;
     }
     
-    public bool isCollidingWithWall()
+    public PlayerWallMovement GetPlayerWallMovement()
     {
-        return playerWallMovement >= PlayerWallMovement.COLLIDE;
+        return playerWallMovement;
+    }
+
+    public bool isPlayerMovingRight()
+    {
+        return Vector3.Angle(playerRotation.right, stickDirection) < 180f;
     }
 
     //When we equip an item, we discard the previous and equip the one selected
