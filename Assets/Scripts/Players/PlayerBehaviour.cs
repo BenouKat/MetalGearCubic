@@ -26,6 +26,9 @@ public class PlayerBehaviour : MonoBehaviour {
     PlayerWallMovement playerWallMovement = PlayerWallMovement.NONE;
     Vector3 wallDirection;
     Vector3 wallRightDirection;
+    bool aimingFromWall;
+    Vector3 startDecalPosition;
+    Vector3 aimingDecalPosition;
 
     [Header("Item list")]
     public List<Item> playerItems;
@@ -68,6 +71,8 @@ public class PlayerBehaviour : MonoBehaviour {
         {
             UpdateAimBehavior(1);
         }
+
+        LateUpdatePosition();
     }
 
     //Update player position
@@ -117,9 +122,48 @@ public class PlayerBehaviour : MonoBehaviour {
             {
                 playerRotation.LookAt(transform.position + stickDirection);
             }
+        }
+    }
 
-            //Player look in the direction (with a quick smooth)
-            transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
+    //Upload player position after aim/shoot
+    public void LateUpdatePosition()
+    {
+        //Player look in the direction (with a quick smooth)
+        transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
+
+        if (Input.GetButton("Aim") && GetEquipedWeapon() != null)
+        {
+            //If the player is looking at the corner and he wants to shoot at the corner
+            if (!aimingFromWall && playerWallMovement == PlayerWallMovement.LOOK && Vector3.Angle(playerRotation.forward, -wallDirection) < 90f)
+            {
+                aimingFromWall = true;
+                startDecalPosition = transform.position;
+                aimingDecalPosition = transform.position + (stickDirection * decalRaycastDistance * 2f);
+            }
+            
+            if (aimingFromWall)
+            {
+                transform.position = Vector3.Lerp(transform.position, aimingDecalPosition, speedRotationSmooth);
+                playerWallMovement = PlayerWallMovement.NONE;
+            }
+
+        }else
+        {
+            if (aimingFromWall)
+            {
+                playerRotation.position = transform.position;
+                playerRotation.forward = wallDirection;
+
+                transform.position = Vector3.Lerp(transform.position, startDecalPosition, speedRotationSmooth);
+                transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
+
+                if (Vector3.Distance(transform.position, startDecalPosition) < 0.1f)
+                {
+                    transform.position = startDecalPosition;
+                    aimingFromWall = false;
+                    playerWallMovement = PlayerWallMovement.LOOK;
+                }
+            } 
         }
     }
 
@@ -161,7 +205,6 @@ public class PlayerBehaviour : MonoBehaviour {
                 {
                     playerRotation.position = transform.position;
                     playerRotation.LookAt(castInfo.point);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
 
                     GetEquipedWeapon().CanonLookForward();
                 }
@@ -169,9 +212,10 @@ public class PlayerBehaviour : MonoBehaviour {
             else
             {
                 //It's basicly stick direction calculation without raycasts. We allow the player to shoot against the wall if we want to.
-                transform.LookAt(transform.position + (cameraDirection.right * Input.GetAxisRaw("Horizontal")) + cameraDirection.forward * Input.GetAxisRaw("Vertical"));
+                playerRotation.position = transform.position;
+                playerRotation.LookAt(transform.position + (cameraDirection.right * Input.GetAxisRaw("Horizontal")) + cameraDirection.forward * Input.GetAxisRaw("Vertical"));
             }
-
+            
             //Shoot
             if (Input.GetButtonDown("Shoot"))
             {
