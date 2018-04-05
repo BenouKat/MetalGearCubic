@@ -133,14 +133,15 @@ public class PlayerBehaviour : MonoBehaviour {
 
         if (Input.GetButton("Aim") && GetEquipedWeapon() != null)
         {
-            //If the player is looking at the corner and he wants to shoot at the corner
+            //If the player is looking at the corner and he wants to shoot from the corner
             if (!aimingFromWall && playerWallMovement == PlayerWallMovement.LOOK && Vector3.Angle(playerRotation.forward, -wallDirection) < 90f)
             {
                 aimingFromWall = true;
                 startDecalPosition = transform.position;
                 aimingDecalPosition = transform.position + (stickDirection * decalRaycastDistance * 2f);
             }
-            
+           
+            //If we are aiming from the wall, the player decal his position
             if (aimingFromWall)
             {
                 transform.position = Vector3.Lerp(transform.position, aimingDecalPosition, speedRotationSmooth);
@@ -149,6 +150,7 @@ public class PlayerBehaviour : MonoBehaviour {
 
         }else
         {
+            //If we stop aiming from the wall, the player returns to its original position (we force him to)
             if (aimingFromWall)
             {
                 playerRotation.position = transform.position;
@@ -157,6 +159,7 @@ public class PlayerBehaviour : MonoBehaviour {
                 transform.position = Vector3.Lerp(transform.position, startDecalPosition, speedRotationSmooth);
                 transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
 
+                //To prevent the animation being long
                 if (Vector3.Distance(transform.position, startDecalPosition) < 0.1f)
                 {
                     transform.position = startDecalPosition;

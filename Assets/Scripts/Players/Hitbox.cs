@@ -236,7 +236,8 @@ public class Hitbox : MonoBehaviour {
                             //Tag "SubdivideTop" : top of the cube, don't display bloody subdivision at the top
                             //Tag "SubdivideBottom" : bottom of the cube, don't display bloody subdivision at the bottom
                             if ((x > 0 && x < maxSubdivision.x - 1 && z > 0 && z < maxSubdivision.z - 1) 
-                                && ((y > 0 || miniObject.tag == "SubdivideBottom") && (y < maxSubdivision.y - 1 || miniObject.tag == "SubdivideTop")))
+                                && ((y > 0 || miniObject.tag == "SubdivideBottom" || miniObject.tag == "SubdivideInside")
+                                && (y < maxSubdivision.y - 1 || miniObject.tag == "SubdivideTop" || miniObject.tag == "SubdivideInside")))
                             {
                                 //The Cubes insides are blood
                                 BloodManager.instance.registerNewBloodObject(miniObject.AddComponent<BloodObject>());

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - SubdivideTop
   - SubdivideBottom
+  - SubdivideInside
   layers:
   - Default
   - TransparentFX
