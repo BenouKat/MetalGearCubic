@@ -193,7 +193,7 @@ public class Hitbox : MonoBehaviour {
             rigidObj.isKinematic = true;
 
             //Here's the touchy part : If the object can contains at least 4 subdivision, we'll devide it
-            if (gameObj.transform.lossyScale.x * gameObj.transform.lossyScale.y * gameObj.transform.lossyScale.z >= 4f* volumeSubdivision)
+            if (gameObj.transform.lossyScale.x * gameObj.transform.lossyScale.y * gameObj.transform.lossyScale.z >= 4f* volumeSubdivision && gameObj.tag != "DontSubdivide")
             {
                 //First we calculate how many subdivision we are going to have on each side x, y, z. We ceil it to avoid a 0 case.
                 Vector3 maxSubdivision = gameObj.transform.lossyScale / sizeSubdivision;
@@ -367,7 +367,7 @@ public class Hitbox : MonoBehaviour {
             physicalObjects.Add(parent.gameObject);
         }
 
-        if(parent.childCount > 0)
+        if(parent.childCount > 0 && parent.tag != "DontSubdivide")
         {
             for(int i=0; i<parent.childCount; i++)
             {
