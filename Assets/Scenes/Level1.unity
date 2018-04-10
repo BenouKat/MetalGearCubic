@@ -922,7 +922,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 472341131}
   m_LocalRotation: {x: 0.3799282, y: 0.59636784, z: -0.3799282, w: 0.59636784}
-  m_LocalPosition: {x: -18.58, y: 7.14, z: -10.4}
+  m_LocalPosition: {x: -18.58, y: 4.5, z: -12.49}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1074,6 +1074,46 @@ Prefab:
     - target: {fileID: 4026583039735978, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
       propertyPath: m_RootOrder
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1661470358766848, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: SubdivideInside
+      objectReference: {fileID: 0}
+    - target: {fileID: 1033950834378952, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1482419312562944, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1629991246252968, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042997891142164, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093032344033028, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1153689371389468, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1666571683411480, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1547418736731342, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
+      objectReference: {fileID: 0}
+    - target: {fileID: 1530095498529852, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}
+      propertyPath: m_TagString
+      value: DontSubdivide
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 676f030e0ea0bf943b05ef4a4aba9c58, type: 2}

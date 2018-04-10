@@ -51,7 +51,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92a0aa8b3dda6174e8e24f30afb212e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  subdivisionBaseObject: {fileID: 1831572549771468, guid: 687ca01089307a0479217ead50ea46be,
+    type: 2}
+  startPoolCount: 1000
+  poolLimit: 1000
   timeBodyDisappear: 10
   timeBloodDisappear: 60
   dryBloodColor: {r: 0.58965516, g: 0, b: 0, a: 1}
   timeBloodDry: 20
+  subdivisionMinSize: 0.05

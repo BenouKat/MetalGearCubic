@@ -23,13 +23,29 @@ public class BloodManager : MonoBehaviour {
     List<BloodTimer> bloodTimes = new List<BloodTimer>();
     Material lastBloodMaterial;
 
+    public GameObject subdivisionBaseObject;
+    public int startPoolCount;
+    public int poolLimit;
+
     public float timeBodyDisappear;
     public float timeBloodDisappear;
     float timeBeforeStartDisappear;
     public Color dryBloodColor;
     public float timeBloodDry;
+    public float subdivisionMinSize;
 
-    //Just object pooling
+    //Let's do object pooling ! Due to a big load of object, we won't ask to Unity to instanciate thousand of object at once
+    //So we create a pool of object instancied on Runtime. Not too much to not explode memory, but enough to have
+    //some object ready to be deployed in case of blood bath.
+    private void Start()
+    {
+        transform.position = Vector3.one * 100000f;
+        for(int i=0; i<startPoolCount;i++)
+        {
+            CreateNewPoolInstance();
+        }
+    }
+    
     BloodTimer bt;
     // Update is called once per frame
     void Update () {
@@ -50,11 +66,42 @@ public class BloodManager : MonoBehaviour {
                 }
             }
         }
+
+        //Pool limit is here to refill the pool during time if the pool is almost empty
+        if(transform.childCount < poolLimit)
+        {
+            CreateNewPoolInstance();
+        }
 	}
 
     public void setTimeBeforeDisappear(float time)
     {
         timeBeforeStartDisappear = time;
+    }
+
+    //Get the object from pool or create one
+    Transform firstChild;
+    public GameObject GetPoolInstance()
+    {
+        if(transform.childCount > 0)
+        {
+            firstChild = transform.GetChild(0);
+            return transform.GetChild(0).gameObject;
+        }
+        return Instantiate(subdivisionBaseObject);
+    }
+
+    public void CreateNewPoolInstance()
+    {
+        GameObject poolObject = Instantiate(subdivisionBaseObject);
+        poolObject.transform.SetParent(transform);
+        poolObject.transform.localPosition = Vector3.zero;
+    }
+
+    public void GetBackPoolObject(GameObject go)
+    {
+        go.transform.SetParent(transform);
+        go.transform.localPosition = Vector3.zero;
     }
 
     //Blood material is a material cube of red color that change color over time

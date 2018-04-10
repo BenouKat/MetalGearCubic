@@ -17,10 +17,12 @@ public class BloodObject : MonoBehaviour {
     public void Init(float timeDisappear, float timeBeforeDisappear, Material bloodMaterial)
     {
         render = GetComponent<MeshRenderer>();
-        if(bloodMaterial != null)
+        if (bloodMaterial != null)
         {
             render.sharedMaterial = bloodMaterial;
+            render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
+
         timeAppeared = Time.time;
         this.timeDisappear = timeDisappear;
         //We set +1 to prevent the initialization occurs in the same frame where the blood is separate from the body.
@@ -28,7 +30,7 @@ public class BloodObject : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update () {
+    void FixedUpdate () {
         
         //If it's off camera and time of apparition + delay is past
 		if(!render.isVisible && Time.time > timeAppeared + timeBeforeDisappear)
@@ -43,9 +45,17 @@ public class BloodObject : MonoBehaviour {
 
             //We do the lerp !
             transform.localScale = Vector3.Lerp(startScale, Vector3.zero, timePast / timeDisappear);
-            if(transform.localScale.x <= 0.0001f) //At a certain size, we destroy the object
+            if(transform.localScale.x <= BloodManager.instance.subdivisionMinSize) //At a certain size, we destroy the object
             {
-                Destroy(gameObject);
+                if(gameObject.name.StartsWith("[Pool]"))
+                {
+                    BloodManager.instance.GetBackPoolObject(gameObject);
+                    Destroy(this);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
             }
         }
 	}

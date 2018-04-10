@@ -158,7 +158,8 @@ public class Hitbox : MonoBehaviour {
     List<GameObject> physicalObjects = new List<GameObject>();
     List<Rigidbody> instRigidObject = new List<Rigidbody>();
     List<Rigidbody> bodyPartRigidObject = new List<Rigidbody>();
-    List<GameObject> parentObjectOfSubdivision = new List<GameObject>();
+    List<GameObject> parentToDestroy = new List<GameObject>();
+    GameObject parentObjectOfTinyBodyPart;
     public float sizeSubdivision;
 
     /*This is the die effect. A simple-complicated effect of subdivide any big part of the player.
@@ -172,6 +173,9 @@ public class Hitbox : MonoBehaviour {
 
         //Calculation of the volume represented by the given subdivision
         float volumeSubdivision = Mathf.Pow(sizeSubdivision, 3f);
+
+        int subDivisionMaxCount = 0;
+        int subDivisionCount = 0;
 
         BloodManager.instance.setTimeBeforeDisappear(timeBeforeDivideOnDeath);
         BloodManager.instance.registerNewBloodMaterial(new Material(bloodMaterial));
@@ -203,8 +207,7 @@ public class Hitbox : MonoBehaviour {
                 //We had the half of a subdivision size to avoid a translation for instancing the small object (if not, the subdivision will be center at the corner, which is not good)
                 Vector3 positionOriginSubdivision = (Vector3.one * -0.5f) + new Vector3(1f / (maxSubdivision.x * 2f), 1f / (maxSubdivision.y * 2f), 1f / (maxSubdivision.z * 2f));
 
-                //We locate the model in another variable (to prevent instancing children)
-                GameObject gameObjModel = InstanceManager.instance.InstanceObject(InstanceManager.InstanceType.Destroyable, gameObj);
+                subDivisionCount = 0;
 
                 //We are rolling all subdivision
                 for (int x=0; x<maxSubdivision.x; x++)
@@ -220,9 +223,11 @@ public class Hitbox : MonoBehaviour {
 
                             //Local subdivision position, by going from Vector3(-0.5) to Vector3(0.5)
                             Vector3 positionSubdivision = positionOriginSubdivision + new Vector3((x / maxSubdivision.x), (y / maxSubdivision.y), (z / maxSubdivision.z));
-                            
-                            //Instancing the mini object
-                            GameObject miniObject = Instantiate(gameObjModel, positionSubdivision, gameObj.transform.rotation);
+
+                            //Instancing the mini object from the blood pool
+                            GameObject miniObject = BloodManager.instance.GetPoolInstance();
+                            miniObject.transform.position = positionSubdivision;
+                            miniObject.transform.rotation = gameObj.transform.rotation;
                             
                             //We set the local scale (which is the global scale)
                             miniObject.transform.localScale = scaleSubdivision;
@@ -236,26 +241,26 @@ public class Hitbox : MonoBehaviour {
                             //Tag "SubdivideTop" : top of the cube, don't display bloody subdivision at the top
                             //Tag "SubdivideBottom" : bottom of the cube, don't display bloody subdivision at the bottom
                             if ((x > 0 && x < maxSubdivision.x - 1 && z > 0 && z < maxSubdivision.z - 1) 
-                                && ((y > 0 || miniObject.tag == "SubdivideBottom" || miniObject.tag == "SubdivideInside")
-                                && (y < maxSubdivision.y - 1 || miniObject.tag == "SubdivideTop" || miniObject.tag == "SubdivideInside")))
+                                && ((y > 0 || gameObj.tag == "SubdivideBottom" || gameObj.tag == "SubdivideInside")
+                                && (y < maxSubdivision.y - 1 || gameObj.tag == "SubdivideTop" || gameObj.tag == "SubdivideInside")))
                             {
                                 //The Cubes insides are blood
                                 BloodManager.instance.registerNewBloodObject(miniObject.AddComponent<BloodObject>());
                             }
                             else
                             {
-                                //The cubes are body part
+                                //The cubes are body part, we change the material
+                                miniObject.GetComponent<MeshRenderer>().sharedMaterial = gameObj.GetComponent<MeshRenderer>().sharedMaterial;
                                 BloodManager.instance.registerNewBodyPartObject(miniObject.AddComponent<BloodObject>());
                             }
 
                             instRigidObject.Add(miniObject.GetComponent<Rigidbody>());
+
+                            subDivisionCount++;
                         }
                     }
                 }
-
-                //This is for the parent, we destroy the empty model
-                Destroy(gameObjModel);
-                parentObjectOfSubdivision.Add(gameObj);
+                
                 //The layer of the parent must be in a layer that exclude the subdivisions, to avoid conflict during forces
                 gameObj.layer = LayerMask.NameToLayer("AvoidMovables");
 
@@ -269,7 +274,17 @@ public class Hitbox : MonoBehaviour {
 
                 //To move the parent object, we had a force relative to the bullet position and the bullet physical force
                 rigidObj.AddForceAtPosition((bullet.transform.forward).normalized * bullet.physicalForceBullet ,bullet.transform.position, ForceMode.Force);
+
+                //We take the biggest part of the body to carry other tiny parts
+                if (subDivisionCount > subDivisionMaxCount)
+                {
+                    parentObjectOfTinyBodyPart = gameObj;
+                    subDivisionMaxCount = subDivisionCount;
+                }
+
                 gameObj.GetComponent<MeshRenderer>().enabled = false;
+                parentToDestroy.Add(gameObj);
+
             }
             else //If it's too small, we don't devide and use the object itself
             {
@@ -279,18 +294,12 @@ public class Hitbox : MonoBehaviour {
         }
 
         //If there's any parent of subdivision, we find the biggest one and assume that it's the body.
-        if(parentObjectOfSubdivision != null && parentObjectOfSubdivision.Count > 0)
+        if(parentObjectOfTinyBodyPart != null)
         {
-            parentObjectOfSubdivision.Sort(delegate (GameObject go1, GameObject go2)
-            {
-                return (go1.transform.lossyScale.x * go1.transform.lossyScale.y * go1.transform.lossyScale.z).CompareTo(go2.transform.lossyScale.x * go2.transform.lossyScale.y * go2.transform.lossyScale.z);
-            });
-            GameObject biggestObject = parentObjectOfSubdivision.FindLast(c => c);
-
             //We make children every body parts that are not subdivide
             foreach (Rigidbody rbo in bodyPartRigidObject)
             {
-                rbo.transform.SetParent(biggestObject.transform);
+                rbo.transform.SetParent(parentObjectOfTinyBodyPart.transform);
             }
         }
 
@@ -335,9 +344,9 @@ public class Hitbox : MonoBehaviour {
         }
 
         //Destoying all empty parents
-        foreach(GameObject po in parentObjectOfSubdivision)
+        foreach(GameObject destroyedParent in parentToDestroy)
         {
-            Destroy(po);
+            Destroy(destroyedParent);
         }
         
         //We destroy the root object, to prevent all player/enemy interaction
