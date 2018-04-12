@@ -33,6 +33,10 @@ public class BloodManager : MonoBehaviour {
     public Color dryBloodColor;
     public float timeBloodDry;
     public float subdivisionMinSize;
+    public float minDistanceForStatic;
+    public float maxTimeCheckingState;
+    public float timeStateStationary;
+    public float maxUndergroundDistance;
 
     //Let's do object pooling ! Due to a big load of object, we won't ask to Unity to instanciate thousand of object at once
     //So we create a pool of object instancied on Runtime. Not too much to not explode memory, but enough to have
@@ -80,17 +84,17 @@ public class BloodManager : MonoBehaviour {
     }
 
     //Get the object from pool or create one
-    Transform firstChild;
     public GameObject GetPoolInstance()
     {
         if(transform.childCount > 0)
         {
-            firstChild = transform.GetChild(0);
             return transform.GetChild(0).gameObject;
         }
         return Instantiate(subdivisionBaseObject);
     }
 
+
+    //Create a new pool instance and set position to zero. We don't set visible false cause it's costy.
     public void CreateNewPoolInstance()
     {
         GameObject poolObject = Instantiate(subdivisionBaseObject);
@@ -98,6 +102,7 @@ public class BloodManager : MonoBehaviour {
         poolObject.transform.localPosition = Vector3.zero;
     }
 
+    //When an object tagged [Pool] is destroyed, it's back in the pool objects
     public void GetBackPoolObject(GameObject go)
     {
         go.transform.SetParent(transform);

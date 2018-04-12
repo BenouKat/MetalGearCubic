@@ -94,7 +94,7 @@ public class Hitbox : MonoBehaviour {
         timeCurrentRotation = 0f;
         enableHitAnimation = true;
     }
-
+    
     //Calculate the rotation depending of where the hit is. We actually doing simple physics here, but without physics. Heh.
     void CalcHitRotation(Vector3 bulletLocalPosition)
     {
@@ -245,13 +245,13 @@ public class Hitbox : MonoBehaviour {
                                 && (y < maxSubdivision.y - 1 || gameObj.tag == "SubdivideTop" || gameObj.tag == "SubdivideInside")))
                             {
                                 //The Cubes insides are blood
-                                BloodManager.instance.registerNewBloodObject(miniObject.AddComponent<BloodObject>());
+                                BloodManager.instance.registerNewBloodObject(miniObject.GetComponent<BloodObject>() ?? miniObject.AddComponent<BloodObject>());
                             }
                             else
                             {
                                 //The cubes are body part, we change the material
                                 miniObject.GetComponent<MeshRenderer>().sharedMaterial = gameObj.GetComponent<MeshRenderer>().sharedMaterial;
-                                BloodManager.instance.registerNewBodyPartObject(miniObject.AddComponent<BloodObject>());
+                                BloodManager.instance.registerNewBodyPartObject(miniObject.GetComponent<BloodObject>() ?? miniObject.AddComponent<BloodObject>());
                             }
 
                             instRigidObject.Add(miniObject.GetComponent<Rigidbody>());
@@ -383,5 +383,10 @@ public class Hitbox : MonoBehaviour {
                 SearchAllGameobject(parent.GetChild(i));
             }
         }
+    }
+
+    public float getCurrentLife()
+    {
+        return currentLife;
     }
 }

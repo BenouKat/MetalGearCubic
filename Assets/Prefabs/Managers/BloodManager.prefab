@@ -60,3 +60,7 @@ MonoBehaviour:
   dryBloodColor: {r: 0.58965516, g: 0, b: 0, a: 1}
   timeBloodDry: 20
   subdivisionMinSize: 0.05
+  minDistanceForStatic: 0.01
+  maxTimeCheckingState: 0.2
+  timeStateStationary: 0.2
+  maxUndergroundDistance: -10

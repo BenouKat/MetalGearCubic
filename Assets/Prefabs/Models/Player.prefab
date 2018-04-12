@@ -38,7 +38,7 @@ GameObject:
   - component: {fileID: 23347321965679728}
   m_Layer: 10
   m_Name: Sac1
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -55,7 +55,7 @@ GameObject:
   - component: {fileID: 23672361923449888}
   m_Layer: 10
   m_Name: Lt2
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 23151219121880630}
   m_Layer: 10
   m_Name: Lt4
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 23893305974553694}
   m_Layer: 10
   m_Name: Lt1
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -303,7 +303,7 @@ GameObject:
   - component: {fileID: 23919799319880844}
   m_Layer: 10
   m_Name: Sac4
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -369,7 +369,7 @@ GameObject:
   - component: {fileID: 23248687562265258}
   m_Layer: 10
   m_Name: Lt3
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -418,7 +418,7 @@ GameObject:
   - component: {fileID: 23773273991678354}
   m_Layer: 10
   m_Name: Sac2
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -469,7 +469,7 @@ GameObject:
   - component: {fileID: 23999035763076944}
   m_Layer: 10
   m_Name: Belt
-  m_TagString: Untagged
+  m_TagString: SubdivideInside
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -503,7 +503,7 @@ GameObject:
   - component: {fileID: 23370276164403928}
   m_Layer: 10
   m_Name: Sac3
-  m_TagString: Untagged
+  m_TagString: DontSubdivide
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -550,7 +550,7 @@ GameObject:
   - component: {fileID: 33013558742404128}
   - component: {fileID: 23304726206489378}
   m_Layer: 10
-  m_Name: SourcilDroit
+  m_Name: SourcilGauche
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -849,7 +849,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1800064014244938}
   m_LocalRotation: {x: 0, y: 0, z: -0.043619405, w: 0.9990483}
-  m_LocalPosition: {x: -0.25, y: 0, z: -0.49}
+  m_LocalPosition: {x: -0.25, y: 0, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4114595105551474}
@@ -2310,6 +2310,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerAnimator: {fileID: 95668712755234624}
   playerBehaviour: {fileID: 114724128854347310}
+  playerHitbox: {fileID: 0}
   walkingModeSpeed:
   - 0
   - 0.1
@@ -2417,10 +2418,58 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
+  windRunAnimation:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.08396357
+      value: 0.37528652
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.22850284
+      value: -0.25026703
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.41348207
+      value: 0.78637433
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.6898667
+      value: -0.9427504
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.9207834
+      value: 0.16088498
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   minWindAngle: 20
-  maxWindAngle: 120
+  maxWindAngle: 45
   minSpeedWind: 0.1
-  maxSpeedWind: 0.3
+  maxSpeedWind: 0.5
   speedRotationUpward: 0.5
   speedRotationDownward: 0.4
   speedRotationJoint: 0.1
@@ -2491,10 +2540,58 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
+  windRunAnimation:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.14492278
+      value: 0.30432272
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.29766497
+      value: -0.6241846
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.499677
+      value: 0.7598741
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.7030205
+      value: -0.9689394
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 0.9055035
+      value: 0.24375096
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   minWindAngle: 20
-  maxWindAngle: 120
+  maxWindAngle: 45
   minSpeedWind: 0.1
-  maxSpeedWind: 0.3
+  maxSpeedWind: 0.5
   speedRotationUpward: 0.5
   speedRotationDownward: 0.4
   speedRotationJoint: 0.1

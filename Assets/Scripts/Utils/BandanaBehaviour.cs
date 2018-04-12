@@ -12,6 +12,7 @@ public class BandanaBehaviour : MonoBehaviour {
 
     //Wind
     public AnimationCurve windAnimation;
+    public AnimationCurve windRunAnimation;
     public float minWindAngle;
     public float maxWindAngle;
     float timeWind;
@@ -70,7 +71,7 @@ public class BandanaBehaviour : MonoBehaviour {
         goalRotation.Rotate(Vector3.right * Mathf.Lerp(0f, 90f, newMovementSpeed), Space.Self);
 
         //We add the wind
-        goalRotation.Rotate(Vector3.right * windAnimation.Evaluate(Mathf.Repeat(timeWind, 1f)) * Mathf.Lerp(minWindAngle, maxWindAngle, newMovementSpeed), Space.Self);
+        goalRotation.Rotate(Vector3.right * GetWind() * Mathf.Lerp(minWindAngle, maxWindAngle, newMovementSpeed), Space.Self);
 
         //The root rotation is following the goalRotation. Depending of if we are accelerate or decelerate, it's not the same speed.
         root.transform.rotation = Quaternion.Slerp(root.transform.rotation, goalRotation.transform.rotation, GetSpeedRotation());
@@ -115,16 +116,22 @@ public class BandanaBehaviour : MonoBehaviour {
             //And tada.
             tempTransJoint.joint.localEulerAngles = tempEuler;
             tempTransJoint.oldRotation = tempTransJoint.joint.rotation;
+            allJoints[i] = tempTransJoint;
         }
 
         oldPosition = currentPosition;
         lastMovementSpeed = newMovementSpeed;
     }
 
+    public float GetWind()
+    {
+        return Mathf.Lerp(windAnimation.Evaluate(Mathf.Repeat(timeWind, 1f)), windRunAnimation.Evaluate(Mathf.Repeat(timeWind, 1f)), newMovementSpeed);
+    }
+
     //It's a very basic way to simulate gravity and cloth weight.
     public float GetSpeedRotation()
     {
-        if(newMovementSpeed > lastMovementSpeed)
+        if (newMovementSpeed > lastMovementSpeed)
         {
             return speedRotationUpward;
         }else if(newMovementSpeed < lastMovementSpeed)

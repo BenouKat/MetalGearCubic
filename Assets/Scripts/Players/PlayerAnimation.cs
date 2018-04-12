@@ -6,13 +6,17 @@ public class PlayerAnimation : MonoBehaviour {
 
     public Animator playerAnimator;
     public PlayerBehaviour playerBehaviour;
+    public Hitbox playerHitbox;
 
     public float[] walkingModeSpeed;
     bool isCollidingWithWall;
+    float lastCurrentLife;
 	// Use this for initialization
 	void Start () {
         if (playerBehaviour == null) playerBehaviour = GetComponent<PlayerBehaviour>();
         if (playerAnimator == null) playerAnimator = transform.GetChild(0).GetComponent<Animator>();
+        if (playerHitbox == null) playerHitbox = GetComponent<Hitbox>();
+        lastCurrentLife = playerHitbox.getCurrentLife();
     }
 
     // Update is called once per frame
@@ -70,6 +74,12 @@ public class PlayerAnimation : MonoBehaviour {
                     playerAnimator.SetTrigger("Reload");
                 }
             }
+        }
+
+        if(lastCurrentLife != playerHitbox.getCurrentLife() && playerHitbox.getCurrentLife() > 0f)
+        {
+            playerAnimator.SetTrigger("Hurt");
+            lastCurrentLife = playerHitbox.getCurrentLife();
         }
     }
 
