@@ -5,10 +5,17 @@ using UnityEngine;
 public class CameraZone : MonoBehaviour
 {
     public GameObject virtualCamera;
-
+    public bool startingCamera = false;
     private void Awake()
     {
-        if (virtualCamera == null) enabled = false;
+        if (virtualCamera == null)
+        {
+            enabled = false;
+        }
+        else
+        {
+            virtualCamera.SetActive(startingCamera);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
