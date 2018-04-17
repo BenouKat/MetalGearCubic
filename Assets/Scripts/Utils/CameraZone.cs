@@ -6,6 +6,10 @@ public class CameraZone : MonoBehaviour
 {
     public GameObject virtualCamera;
     public bool startingCamera = false;
+    public bool isTracking = false;
+
+    public List<CameraZone> connectedZone;
+
     private void Awake()
     {
         if (virtualCamera == null)
@@ -14,17 +18,41 @@ public class CameraZone : MonoBehaviour
         }
         else
         {
-            virtualCamera.SetActive(startingCamera);
+            if(startingCamera)
+            {
+                virtualCamera.SetActive(true);
+                CameraManager.instance.EnableZoneCam();
+                isTracking = true;
+            }
+            else
+            {
+                virtualCamera.SetActive(false);
+                isTracking = false;
+            }
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        virtualCamera.SetActive(true);
+        if(!virtualCamera.activeInHierarchy)
+        {
+            virtualCamera.SetActive(true);
+            CameraManager.instance.EnableZoneCam();
+        }
+        isTracking = true;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        virtualCamera.SetActive(false);
+        if(virtualCamera.activeInHierarchy)
+        {
+            if(!connectedZone.Exists(c => c.isTracking))
+            {
+                virtualCamera.SetActive(false);
+                CameraManager.instance.DisableZoneCam();
+            }
+            isTracking = false;
+        }
+        
     }
 }
