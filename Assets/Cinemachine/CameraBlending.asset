@@ -9,26 +9,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 36baaa8bdcb9d8b49b9199833965d2c3, type: 3}
-  m_Name: ClearShot
+  m_Name: CameraBlending
   m_EditorClassIdentifier: 
   m_CustomBlends:
-  - m_From: SmoothShot1
-    m_To: DollyTracked 3 vcam3
-    m_Blend:
-      m_Style: 0
-      m_Time: 2
-  - m_From: DollyTracked 3 vcam3
-    m_To: SmoothShot1
-    m_Blend:
-      m_Style: 0
-      m_Time: 2
-  - m_From: DollyTracked 3 vcam3
-    m_To: DollyTracked 4 vcam4
+  - m_From: '**ANY CAMERA**'
+    m_To: AngleCamera
     m_Blend:
       m_Style: 1
       m_Time: 1
-  - m_From: DollyTracked 4 vcam4
-    m_To: DollyTracked 3 vcam3
+  - m_From: AngleCamera
+    m_To: '**ANY CAMERA**'
     m_Blend:
-      m_Style: 1
-      m_Time: 1
+      m_Style: 2
+      m_Time: 0.25

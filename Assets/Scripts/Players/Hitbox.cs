@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Hitbox : MonoBehaviour {
+    
 
     [Header("Life")]
     public float maxLife;
@@ -19,6 +20,7 @@ public class Hitbox : MonoBehaviour {
     public Material bloodMaterial;
 
     [Header("Hit")]
+    public List<GameObject> detachables;
     bool enableHitAnimation = false;
     public GameObject body;
     float timeCurrentRotation;
@@ -55,6 +57,11 @@ public class Hitbox : MonoBehaviour {
         //If the life is under 0, the player dies
         if(currentLife <= 0f)
         {
+            foreach(GameObject go in detachables)
+            {
+                InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Destroyable, go);
+            }
+
             DieEffect(bullet);
         }
         else //Else, he's just hit !

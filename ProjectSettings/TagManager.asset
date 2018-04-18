@@ -39,7 +39,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - CameraZone
   - MouseEvent
   m_SortingLayers:
   - name: Default
