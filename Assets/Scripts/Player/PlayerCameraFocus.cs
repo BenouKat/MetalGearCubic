@@ -8,6 +8,7 @@ public class PlayerCameraFocus : MonoBehaviour {
     public GameObject virtualCamera;
     public GameObject frontCameraPosition;
     public GameObject frontCameraLookAt;
+
     public float distanceAngle = 2f;
     Vector3 startCameraPosition;
     Vector3 startCameraFollowerPosition;
@@ -23,8 +24,10 @@ public class PlayerCameraFocus : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        //If the player is looking from a corner of the wall
 		if(!isOffset && playerBehaviour.GetPlayerWallMovement() == PlayerBehaviour.PlayerWallMovement.LOOK)
         {
+            //The angle camera is set, depending of the side, we displace the target view on the right or on the left
             virtualCamera.SetActive(true);
             if (playerBehaviour.isPlayerMovingRight())
             {
@@ -38,6 +41,7 @@ public class PlayerCameraFocus : MonoBehaviour {
             }
             isOffset = true;
 
+        //Else if the player stop looking, the angle camera is off
         }else if(isOffset && playerBehaviour.GetPlayerWallMovement() != PlayerBehaviour.PlayerWallMovement.LOOK)
         {
             virtualCamera.SetActive(false);

@@ -22,8 +22,7 @@ public class CameraManager : MonoBehaviour {
         mainCam.SetActive(camActive == 0);
     }
 
-
-
+    //Count the number of active cam. If the number is not 0, the main cam is disabled
 	public void EnableZoneCam()
     {
         camActive++;
@@ -33,6 +32,7 @@ public class CameraManager : MonoBehaviour {
         }
     }
 
+    //If the live cam count is 0, we enable the main cam
     public void DisableZoneCam()
     {
         camActive--;

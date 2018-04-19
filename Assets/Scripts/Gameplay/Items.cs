@@ -7,7 +7,7 @@ public class Item : MonoBehaviour {
     public GameObject collectibleModel;
     public GameObject handledModel;
 
-    private void Start()
+    private void Awake()
     {
         collectibleModel.SetActive(true);
         handledModel.SetActive(false);
@@ -19,11 +19,7 @@ public class Item : MonoBehaviour {
         PlayerBehaviour player;
         if((player = other.GetComponent<PlayerBehaviour>()) != null)
         {
-            //We don't need to detect the object anymore
-            Destroy(GetComponent<BoxCollider>());
-            Destroy(GetComponent<Rigidbody>());
-            //Removing the collectible graphics
-            collectibleModel.SetActive(false);
+            Picked();
 
             //Add the item to the player. If the player isn't equiped with anything, we auto equip
             player.playerItems.Add(this);
@@ -36,6 +32,15 @@ public class Item : MonoBehaviour {
                 InstanceManager.instance.MoveTo(InstanceManager.InstanceType.Items, gameObject);
             }
         }
+    }
+
+    public void Picked()
+    {
+        //We don't need to detect the object anymore
+        Destroy(GetComponent<BoxCollider>());
+        Destroy(GetComponent<Rigidbody>());
+        //Removing the collectible graphics
+        collectibleModel.SetActive(false);
     }
     
     //Equip the item active its "handled" graphics in the hand of the player
