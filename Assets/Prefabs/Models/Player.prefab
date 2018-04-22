@@ -2448,8 +2448,7 @@ MonoBehaviour:
   bloodEffect: {fileID: 0}
   timeBeforeDivideOnDeath: 0.3
   bloodMaterial: {fileID: 2100000, guid: 5b8729e77f991624f8cb5acc03a27e58, type: 2}
-  detachables:
-  - {fileID: 1871932917897234}
+  detachables: []
   body: {fileID: 1791766593869534}
   timeRotationIn: 0.07
   timeRotationOut: 0.3
@@ -2467,7 +2466,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerBehaviour: {fileID: 114724128854347310}
-  virtualCamera: {fileID: 0}
   frontCameraPosition: {fileID: 1339586021005882}
   frontCameraLookAt: {fileID: 1467715552383572}
   distanceAngle: 2

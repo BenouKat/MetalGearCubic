@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerCameraFocus : MonoBehaviour {
 
     public PlayerBehaviour playerBehaviour;
-    public GameObject virtualCamera;
+    GameObject virtualCamera;
     public GameObject frontCameraPosition;
     public GameObject frontCameraLookAt;
 
@@ -19,6 +19,7 @@ public class PlayerCameraFocus : MonoBehaviour {
         if (playerBehaviour == null) playerBehaviour = GetComponent<PlayerBehaviour>();
         startCameraPosition = frontCameraPosition.transform.localPosition;
         startCameraFollowerPosition = frontCameraLookAt.transform.localPosition;
+        virtualCamera = CameraManager.instance.mainCam;
 
     }
 	
