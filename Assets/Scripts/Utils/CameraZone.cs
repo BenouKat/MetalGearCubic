@@ -24,7 +24,7 @@ public class CameraZone : MonoBehaviour
             {
                 //We enable it
                 virtualCamera.SetActive(true);
-                CameraManager.instance.EnableZoneCam();
+                CameraManager.instance.EnableZoneCam(virtualCamera);
                 isTracking = true;
             }
             else
@@ -42,7 +42,7 @@ public class CameraZone : MonoBehaviour
         if(!virtualCamera.activeInHierarchy)
         {
             virtualCamera.SetActive(true);
-            CameraManager.instance.EnableZoneCam();
+            CameraManager.instance.EnableZoneCam(virtualCamera);
         }
         isTracking = true;
     }
@@ -55,7 +55,7 @@ public class CameraZone : MonoBehaviour
             if(!connectedZone.Exists(c => c.isTracking))
             {
                 virtualCamera.SetActive(false);
-                CameraManager.instance.DisableZoneCam();
+                CameraManager.instance.DisableZoneCam(virtualCamera);
             }
             isTracking = false;
         }

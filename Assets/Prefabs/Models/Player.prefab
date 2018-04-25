@@ -776,7 +776,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1894174429676648}
   m_LocalRotation: {x: -0, y: -0.7200086, z: -0, w: 0.69396514}
-  m_LocalPosition: {x: -17.023, y: 0.6, z: -12.56}
+  m_LocalPosition: {x: -17.023, y: 0.6, z: -12.355}
   m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_Children:
   - {fileID: 4533629957391816}
@@ -2466,9 +2466,46 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerBehaviour: {fileID: 114724128854347310}
-  frontCameraPosition: {fileID: 1339586021005882}
-  frontCameraLookAt: {fileID: 1467715552383572}
-  distanceAngle: 2
+  frontCameraPosition: {fileID: 4868184547430410}
+  frontCameraLookAt: {fileID: 4421633834275236}
+  distanceMove: 0.5
+  distanceAngle: 1.5
+  blendIn:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 1.9708751
+      outSlope: 1.9708751
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  blendOut:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 11.461268
+      outSlope: 11.461268
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.25
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!114 &114724128854347310
 MonoBehaviour:
   m_ObjectHideFlags: 1

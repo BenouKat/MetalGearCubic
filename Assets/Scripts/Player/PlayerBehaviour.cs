@@ -88,27 +88,37 @@ public class PlayerBehaviour : MonoBehaviour {
             //Looking the camera, camera will never be upside down
             cameraDirection.LookAt(currentCamera.transform, Vector3.up);
             playerVelocity = 0f;
+
+            //If we are not targeting on a corner, player wall movement is none
+            if(!(Input.GetButton("Aim") && playerWallMovement == PlayerWallMovement.LOOK) && !aimingFromWall)
+            {
+                stickDirection = Vector3.zero;
+                playerWallMovement = PlayerWallMovement.NONE;
+            }
         }
         else
         {
             //Calculate direction point from the center of the joystick
             RefreshStickDirection();
 
-            //Player move in the direction and write velocity
+            //Player move in the direction and write velocity (if not aiming from the wall)
             //If the player is against a wall, we reduce its speed
-            switch(playerWallMovement)
+            if(!aimingFromWall)
             {
-                case PlayerWallMovement.NONE:
-                    transform.position += stickDirection * Time.deltaTime * maxSpeed;
-                    playerVelocity = Vector3.Distance(Vector3.zero, stickDirection * maxSpeed);
-                    break;
-                case PlayerWallMovement.MOVE:
-                    transform.position += stickDirection * Time.deltaTime * speedAgainstWall;
-                    playerVelocity = Vector3.Distance(Vector3.zero, stickDirection * speedAgainstWall);
-                    break;
-                default:
-                    playerVelocity = 0f;
-                    break;
+                switch (playerWallMovement)
+                {
+                    case PlayerWallMovement.NONE:
+                        transform.position += stickDirection * Time.deltaTime * maxSpeed;
+                        playerVelocity = Vector3.Distance(Vector3.zero, stickDirection * maxSpeed);
+                        break;
+                    case PlayerWallMovement.MOVE:
+                        transform.position += stickDirection * Time.deltaTime * speedAgainstWall;
+                        playerVelocity = Vector3.Distance(Vector3.zero, stickDirection * speedAgainstWall);
+                        break;
+                    default:
+                        playerVelocity = 0f;
+                        break;
+                }
             }
 
             //Orientation regarding if the player is against a wall or not
@@ -160,7 +170,7 @@ public class PlayerBehaviour : MonoBehaviour {
                 transform.rotation = Quaternion.Slerp(transform.rotation, playerRotation.rotation, speedRotationSmooth);
 
                 //To prevent the animation being long
-                if (Vector3.Distance(transform.position, startDecalPosition) < 0.1f)
+                if (Vector3.Distance(transform.position, startDecalPosition) < 0.01f)
                 {
                     transform.position = startDecalPosition;
                     aimingFromWall = false;
@@ -168,6 +178,7 @@ public class PlayerBehaviour : MonoBehaviour {
                 }
             } 
         }
+
     }
 
     public void UpdateAimBehavior(int level)
@@ -447,5 +458,10 @@ public class PlayerBehaviour : MonoBehaviour {
             return (Weapon)playerItems[equiped];
         }
         return null;
+    }
+
+    public bool IsAimingFromWall()
+    {
+        return aimingFromWall;
     }
 }
