@@ -48,9 +48,11 @@ public class BloodManager : MonoBehaviour {
         {
             CreateNewPoolInstance();
         }
+        myTransform = transform;
     }
     
     BloodTimer bt;
+    Transform myTransform;
     // Update is called once per frame
     void Update () {
 
@@ -72,7 +74,7 @@ public class BloodManager : MonoBehaviour {
         }
 
         //Pool limit is here to refill the pool during time if the pool is almost empty
-        if(transform.childCount < poolLimit)
+        if(myTransform.childCount < poolLimit)
         {
             CreateNewPoolInstance();
         }
