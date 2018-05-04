@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class IABrain : MonoBehaviour {
 
+    public bool isActiveState;
+    public enum PassiveState { WORKING, TALKING, WAITING }
+    public enum ActiveState { SPOT, FREEZE, ALERT, DANGER, PRUDENCE }
+
 	// Use this for initialization
 	void Start () {
 		
