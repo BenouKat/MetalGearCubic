@@ -8,6 +8,7 @@ TagManager:
   - SubdivideBottom
   - SubdivideInside
   - DontSubdivide
+  - Floor
   layers:
   - Default
   - TransparentFX
