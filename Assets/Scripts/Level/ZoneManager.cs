@@ -38,6 +38,32 @@ class ZoneManagerEditor : Editor
             }
         }
 
+        //Generate all the zone entries
+        if (GUILayout.Button("Generate All Checkers"))
+        {
+            for (int i = 0; i < zoneManager.transform.childCount; i++)
+            {
+                Zone zone = zoneManager.transform.GetChild(i).GetComponent<Zone>();
+                if (zone != null)
+                {
+                    zone.GenerateCheckers();
+                }
+            }
+        }
+
+        //Clear all the entries
+        if (GUILayout.Button("Clear All Checkers"))
+        {
+            for (int i = 0; i < zoneManager.transform.childCount; i++)
+            {
+                Zone zone = zoneManager.transform.GetChild(i).GetComponent<Zone>();
+                if (zone != null)
+                {
+                    zone.ClearCheckers();
+                }
+            }
+        }
+
         //Random colorize the zones
         if (GUILayout.Button("Colorize"))
         {
@@ -76,6 +102,8 @@ public class ZoneManager : MonoBehaviour {
     public float zoneHeigth = 3f;
     [Range(0f, 2f)]
     public float entryDistanceMatch = 1f;
+    [Range(1f, 5f)]
+    public float checkLength = 1f;
 
     List<Zone> allZones;
     List<ZoneEntry> allEntry;

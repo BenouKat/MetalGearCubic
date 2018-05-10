@@ -21,10 +21,20 @@ class ZoneEditor : Editor
         {
             zone.GenerateEntry();
         }
-
+        
         if (GUILayout.Button("Clear Entries"))
         {
             zone.ClearEntry();
+        }
+
+        if (GUILayout.Button("Generate Checkers"))
+        {
+            zone.GenerateCheckers();
+        }
+
+        if (GUILayout.Button("Clear Checkers"))
+        {
+            zone.ClearCheckers();
         }
     }
 }
@@ -50,7 +60,7 @@ public class Zone : MonoBehaviour {
     {
         //It defines the height of a zone (not controlled by scale)
         float zoneHeigth = transform.parent.GetComponent<ZoneManager>().zoneHeigth;
-        
+
         //For all signs
         for (int i = 0; i < signs.Length; i++)
         {
@@ -101,6 +111,16 @@ public class Zone : MonoBehaviour {
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.DrawSolidRectangleWithOutline(vects, Color.clear, colorEntry);
+            }
+        }
+
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.Less;
+        Handles.color = Color.blue;
+        foreach (Transform checker in zoneChecker)
+        {
+            if(checker != null)
+            {
+                Handles.DrawSolidDisc(checker.position + Vector3.up*0.5f, checker.up, 0.2f);
             }
         }
     }
@@ -235,10 +255,60 @@ public class Zone : MonoBehaviour {
         entryComp.SetZoneConnected(this);
         zoneEntries.Add(entryComp);
     }
+
+
+    public void GenerateCheckers()
+    {
+        ClearCheckers();
+
+        float checkerLength = transform.parent.GetComponent<ZoneManager>().checkLength;
+
+        float xProgression =  -0.5f + ((checkerLength/transform.localScale.x) / 2f);
+        float zProgression = 0f;
+        RaycastHit info;
+
+        while (xProgression < 0.5f)
+        {
+            zProgression = -0.5f + ((checkerLength / transform.localScale.z) / 2f); ;
+            while (zProgression < 0.5f)
+            {
+                if(Physics.Raycast(transform.position + (new Vector3(xProgression*transform.localScale.x, 10f, zProgression*transform.localScale.z)), -Vector3.up, out info, 11f, 1 << LayerMask.NameToLayer("Unmovable")))
+                {
+                    if(info.collider.tag == "Floor")
+                    {
+                        InstanceChecker(xProgression, zProgression);
+                    }
+                }
+                zProgression += checkerLength / transform.localScale.z;
+            }
+            xProgression += checkerLength / transform.localScale.x;
+        }
+    }
+
+    public void InstanceChecker(float xPos, float zPos)
+    {
+        Transform checker = (new GameObject("Checker")).transform;
+        checker.SetParent(transform);
+        checker.transform.localPosition = new Vector3(xPos, 0f, zPos);
+        checker.transform.rotation = Quaternion.identity;
+        checker.transform.localScale = Vector3.one;
+        zoneChecker.Add(checker);
+    }
+
+    public void ClearCheckers()
+    {
+        foreach(Transform trans in zoneChecker)
+        {
+            DestroyImmediate(trans.gameObject);
+        }
+        zoneChecker.Clear();
+    }
+
 #endif
 
     public string zoneName;
     public List<ZoneEntry> zoneEntries;
+    public List<Transform> zoneChecker;
     Transform trans;
 
     private void Awake()

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IAMovement : MonoBehaviour {
+public class IAHears : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
