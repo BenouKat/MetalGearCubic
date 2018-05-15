@@ -22,7 +22,6 @@ public class IAEyes : MonoBehaviour {
 
     public Transform enemyFocused;
     float currentVisualAcuity;
-    public float defaultReactionTime;
 
     private void Start()
     {
@@ -65,7 +64,7 @@ public class IAEyes : MonoBehaviour {
     {
         foreach (Collider col in inFieldOfView)
         {
-            if (IsOnViewSight(col.transform, 1 << intruderLayer | 1 << wallLayer, intruderLayer))
+            if (IsOnViewSight(col.transform, intruderLayer))
             {
                 ProcessVisualAcuity(col.transform);
                 if(currentVisualAcuity > 0f)
@@ -78,7 +77,7 @@ public class IAEyes : MonoBehaviour {
 
     public void KeepEnemy()
     {
-        if (!IsOnViewSight(enemyFocused, 1 << intruderLayer | 1 << wallLayer, intruderLayer))
+        if (!IsOnViewSight(enemyFocused, intruderLayer))
         {
             currentVisualAcuity = 0f;
             enemyFocused = null;
@@ -96,7 +95,7 @@ public class IAEyes : MonoBehaviour {
         {
             if (currentVisualAcuity < 1f)
             {
-                currentVisualAcuity += (Time.deltaTime * visualAcuityByDistance.Evaluate(distanceFromSpotRatio)) / defaultReactionTime;
+                currentVisualAcuity += (Time.deltaTime * visualAcuityByDistance.Evaluate(distanceFromSpotRatio)) / brain.GetInternalStateDecision(IABrain.IAState.SPOT);
             }
             else
             {
@@ -105,21 +104,21 @@ public class IAEyes : MonoBehaviour {
         }
     }
 
-    public bool IsOnViewSight(Transform target, int layerMask, int layerTarget)
+    public bool IsOnViewSight(Transform target, int layerTarget)
     {
-        return IsOnSight(target, viewDistance, layerMask, layerTarget);
+        return IsOnSight(target, viewDistance, layerTarget);
     }
 
-    public bool IsOnSpotSight(Transform target, int layerMask, int layerTarget)
+    public bool IsOnSpotSight(Transform target, int layerTarget)
     {
-        return IsOnSight(target, spotDistance, layerMask, layerTarget);
+        return IsOnSight(target, spotDistance, layerTarget);
     }
 
-    public bool IsOnSight(Transform target, float distance, int layerMask, int layerTarget)
+    public bool IsOnSight(Transform target, float distance, int layerTarget)
     {
         if (Vector3.Angle(transform.forward, target.position - transform.position) <= fieldOfView)
         {
-            return CanBeSeen(target, distance, layerMask, layerTarget);
+            return CanBeSeen(target, distance, 1 << layerTarget | 1 << wallLayer, layerTarget);
         }
         return false;
     }
@@ -138,7 +137,12 @@ public class IAEyes : MonoBehaviour {
 
     public bool HasTargetOnSight()
     {
-        return enemyFocused != null;
+        return enemyFocused != null && currentVisualAcuity >= 1f;
+    }
+
+    public Transform GetEyesTarget()
+    {
+        return enemyFocused;
     }
 
     int memoryIndex = 0;

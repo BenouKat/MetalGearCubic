@@ -8,6 +8,10 @@ public class IARadio : MonoBehaviour {
     bool receivingMessage;
     IAInformation informationReceived;
 
+    public delegate void MessageReceptionHandler(IAInformation information);
+    public event MessageReceptionHandler OnMessageReceptionBegin;
+    public event MessageReceptionHandler OnMessageReceptionEnd;
+
     private void Start()
     {
         SwitchRadioOn();
@@ -23,9 +27,9 @@ public class IARadio : MonoBehaviour {
         IARadioManager.instance.DisconnectRadio(this);
     }
 
-    public void Talk(IAInformation information, float length)
+    public void Talk(IAInformation information)
     {
-        IARadioManager.instance.BeginCommunication(this, information, channel, length);
+        IARadioManager.instance.BeginCommunication(this, information, channel);
     }
 
     public void InterruptTalk()
@@ -37,16 +41,18 @@ public class IARadio : MonoBehaviour {
     {
         informationReceived = information;
         receivingMessage = true;
+        if(OnMessageReceptionBegin != null) OnMessageReceptionBegin.Invoke(informationReceived);
     }
 
     public void ProcessMessageReception(float completion)
     {
-        informationReceived.informationCompletion = completion;
+        informationReceived.completion = completion;
     }
 
     public void EndMessageReception()
     {
         receivingMessage = false;
+        if (OnMessageReceptionEnd != null) OnMessageReceptionEnd.Invoke(informationReceived);
     }
 
     public bool isReceivingMessage()

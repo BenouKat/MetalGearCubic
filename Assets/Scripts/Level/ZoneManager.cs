@@ -98,6 +98,8 @@ class ZoneManagerEditor : Editor
 
 public class ZoneManager : MonoBehaviour {
 
+    public static ZoneManager instance;
+
     [Range(1f, 5f)]
     public float zoneHeigth = 3f;
     [Range(0f, 2f)]
@@ -105,11 +107,19 @@ public class ZoneManager : MonoBehaviour {
     [Range(1f, 5f)]
     public float checkLength = 1f;
 
-    List<Zone> allZones;
-    List<ZoneEntry> allEntry;
+    [HideInInspector]
+    public List<Zone> allZones;
+    [HideInInspector]
+    public List<ZoneEntry> allEntry;
     
 	// Use this for initialization
 	void Awake () {
+
+        if (instance == null)
+        {
+            instance = this;
+        }
+
         allZones = new List<Zone>();
         allZones.AddRange(GetComponentsInChildren<Zone>());
 

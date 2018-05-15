@@ -33,7 +33,7 @@ public class IARadioManager : MonoBehaviour {
         radioNetwork.Remove(radio);
     }
 
-    public void BeginCommunication(IARadio inputRadio, IAInformation information, Channels channel, float messageLength)
+    public void BeginCommunication(IARadio inputRadio, IAInformation information, Channels channel)
     {
         //Add the radio to the online radio. There's only one online radio per channel.
         onlineRadio.Add(inputRadio);
@@ -46,6 +46,8 @@ public class IARadioManager : MonoBehaviour {
                 radio.BeginMessageReception(information);
             }
         }
+
+        StartCoroutine(ProcessCommunication(channel, information.length));
     }
 
     IEnumerator ProcessCommunication(Channels channel, float messageLength)
