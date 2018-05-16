@@ -118,14 +118,14 @@ public class IAEyes : MonoBehaviour {
     {
         if (Vector3.Angle(transform.forward, target.position - transform.position) <= fieldOfView)
         {
-            return CanBeSeen(target, distance, 1 << layerTarget | 1 << wallLayer, layerTarget);
+            return CanBeSeen(target, distance, layerTarget);
         }
         return false;
     }
 
-    public bool CanBeSeen(Transform target, float distance, int layerMask, int layerTarget)
+    public bool CanBeSeen(Transform target, float distance, int layerTarget)
     {
-        if (Physics.Raycast(transform.position, target.position - transform.position, out info, distance, layerMask))
+        if (Physics.Raycast(transform.position, target.position - transform.position, out info, distance, 1 << layerTarget | 1 << wallLayer))
         {
             if (layerTarget < 0 || info.collider.gameObject.layer == layerTarget)
             {

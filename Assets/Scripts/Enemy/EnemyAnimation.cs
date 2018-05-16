@@ -5,7 +5,7 @@ using UnityEngine;
 public class EnemyAnimation : MonoBehaviour {
 
     public Animator enemyAnimator;
-    public EnemyBehaviour enemyBehaviour;
+    public IABrain enemyBrain;
     public Hitbox enemyHitbox;
 
     public float[] walkingModeSpeed;
@@ -13,7 +13,7 @@ public class EnemyAnimation : MonoBehaviour {
     float lastCurrentLife;
 	// Use this for initialization
 	void Start () {
-        if (enemyBehaviour == null) enemyBehaviour = GetComponent<EnemyBehaviour>();
+        if (enemyBrain == null) enemyBrain = GetComponent<IABrain>();
         if (enemyAnimator == null) enemyAnimator = transform.GetChild(0).GetComponent<Animator>();
         if (enemyHitbox == null) enemyHitbox = GetComponent<Hitbox>();
         lastCurrentLife = enemyHitbox.getCurrentLife();
@@ -22,19 +22,19 @@ public class EnemyAnimation : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        enemyAnimator.SetInteger("WalkingMode", VelocityToWalkingMode(enemyBehaviour.GetEnemyVelocity()));
-        enemyAnimator.SetBool("Equiped", enemyBehaviour.GetWeaponOut());
-        enemyAnimator.SetInteger("WeaponMode", (int)enemyBehaviour.GetEquipedWeapon().weaponType);
+        enemyAnimator.SetInteger("WalkingMode", VelocityToWalkingMode(enemyBrain.legs.GetEnemyVelocity()));
+        enemyAnimator.SetBool("Equiped", enemyBrain.arms.GetWeaponOut());
+        enemyAnimator.SetInteger("WeaponMode", (int)enemyBrain.arms.GetEquipedWeapon().weaponType);
 
-        enemyAnimator.SetBool("Aim", enemyBehaviour.IsAimingWithWeapon());
+        enemyAnimator.SetBool("Aim", enemyBrain.arms.IsAimingWithWeapon());
 
         //If we aim, do we shoot ?
-        if (enemyBehaviour.IsAimingWithWeapon())
+        if (enemyBrain.arms.IsAimingWithWeapon())
         {
             //Shoot
-            if (enemyBehaviour.IsShootingWithWeapon())
+            if (enemyBrain.arms.IsShootingWithWeapon())
             {
-                Weapon.ShootOutput output = enemyBehaviour.GetEquipedWeapon().GetShootOutput();
+                Weapon.ShootOutput output = enemyBrain.arms.GetEquipedWeapon().GetShootOutput();
                 switch (output)
                 {
                     //Shoot is valid, we do anim shoot !

@@ -308,6 +308,7 @@ public class Zone : MonoBehaviour {
 
     public string zoneName;
     public List<ZoneEntry> zoneEntries;
+    List<Transform> zoneEntriesTrans;
     public List<Transform> zoneChecker;
     Transform trans;
 
@@ -315,6 +316,12 @@ public class Zone : MonoBehaviour {
     {
         //Just a simple optimisation, because IsInsideZone is going to be called a lot
         trans = transform;
+
+        zoneEntriesTrans = new List<Transform>();
+        foreach(ZoneEntry entry in zoneEntries)
+        {
+            zoneEntriesTrans.Add(entry.transform);
+        }
     }
 
     public bool IsInsideZone(Vector3 position)
@@ -324,5 +331,10 @@ public class Zone : MonoBehaviour {
             && position.x <= (trans.position.x + (trans.localScale.x / 2f))
             && position.z >= (trans.position.z - (trans.localScale.z / 2f))
              && position.z <= (trans.position.z + (trans.localScale.z / 2f));
+    }
+
+    public List<Transform> GetAllEntriesTransform()
+    {
+        return zoneEntriesTrans;
     }
 }

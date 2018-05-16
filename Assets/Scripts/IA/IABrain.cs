@@ -20,6 +20,7 @@ public class IABrain : MonoBehaviour {
     public IAMouth mouth;
     public IAHears hears;
     public IALegs legs;
+    public IAArms arms;
 
     [Header("Targets")]
     Zone zoneTarget;
@@ -98,7 +99,9 @@ public class IABrain : MonoBehaviour {
             zoneTarget = validZones[Random.Range(0, validZones.Count)];
             informationToCommunicate = new IAInformation(IAInformation.InformationType.SEARCHZONE, zoneTarget.name);
             RegisterMemory(informationToCommunicate, true);
-            //To continue (go to the zone !)
+
+            legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
+            currentState = IAState.WORKING;
         }
     }
 
@@ -140,7 +143,7 @@ public class IABrain : MonoBehaviour {
             {
                 if(checkerCount > 0)
                 {
-                    legs.SetDestination(pendingCheckers[0], IALegs.Speed.WALK, true, false);
+                    legs.SetDestination(pendingCheckers[0], IALegs.Speed.WALK, true, 0f);
                 }
                 else
                 {
