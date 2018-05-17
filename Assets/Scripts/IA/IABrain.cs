@@ -1,14 +1,77 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(IABrain))]
+class IABrainEditor : Editor
+{
+    public void OnSceneGUI()
+    {
+        IABrain brain = ((IABrain)target);
+
+        //Handles.DrawSolidRectangleWithOutline(new Rect(brain.transform.position + (Vector3.up * 4f), Vector2.one*5f), Color.black, Color.clear);
+        Handles.Label(brain.transform.position + (Vector3.up * 1.5f), brain.currentState.ToString());
+
+        if(brain.GetZoneTarget() != null)
+        {
+            brain.GetZoneTarget().DrawZone(true);
+
+            Handles.zTest = UnityEngine.Rendering.CompareFunction.Less;
+            Handles.color = Color.red;
+            foreach (Transform checker in brain.GetCheckers())
+            {
+                if (checker != null)
+                {
+                    Handles.DrawSolidDisc(checker.position + Vector3.up * 0.6f, checker.up, 0.2f);
+                }
+            }
+        }
+
+        brain.eyes.DrawEyesEditor();
+
+        foreach(IAInformation info in brain.GetSoftMemory())
+        {
+            if(info.type == IAInformation.InformationType.SEARCHZONE || info.type == IAInformation.InformationType.ZONECLEAR)
+            {
+                Zone zoneDisplayed = ZoneManager.instance.allZones.Find(c => c.zoneName == info.parameters);
+                if(zoneDisplayed != null)
+                {
+                    Vector3[] vects = new Vector3[4]
+                    {
+                        new Vector3((zoneDisplayed.transform.position.x + (zoneDisplayed.transform.localScale.x/2f)), 3f, (zoneDisplayed.transform.position.z + (zoneDisplayed.transform.localScale.z/2f))),
+                        new Vector3((zoneDisplayed.transform.position.x - (zoneDisplayed.transform.localScale.x/2f)), 3f, (zoneDisplayed.transform.position.z + (zoneDisplayed.transform.localScale.z/2f))),
+                        new Vector3((zoneDisplayed.transform.position.x - (zoneDisplayed.transform.localScale.x/2f)), 3f, (zoneDisplayed.transform.position.z - (zoneDisplayed.transform.localScale.z/2f))),
+                        new Vector3((zoneDisplayed.transform.position.x + (zoneDisplayed.transform.localScale.x/2f)), 3f, (zoneDisplayed.transform.position.z - (zoneDisplayed.transform.localScale.z/2f)))
+                    };
+                    Color color = info.type == IAInformation.InformationType.SEARCHZONE ? new Color(1f, 1f, 0f, 1f) : new Color(0f, 1f, 0f, 1f);
+                    color.a = brain.memoryPerformance.Evaluate(Time.time - info.timeReceived) * info.completion;
+
+                    Handles.zTest = UnityEngine.Rendering.CompareFunction.Less;
+                    Handles.DrawSolidRectangleWithOutline(vects, color, Color.clear);
+
+                    Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+                    Handles.DrawSolidRectangleWithOutline(vects, Color.clear, color);
+                }
+            }
+        }
+    }
+}
+#endif
 
 public class IABrain : MonoBehaviour {
 
     [System.Serializable]
     internal class DecisionTime
     {
-        public IAState state;
-        public float internalStateUpdateTime;
+        public IAState state = IAState.IDLE;
+        public float internalStateUpdateTime = 1f;
+
+        public DecisionTime(IAState state)
+        {
+            this.state = state;
+        }
     }
 
     public bool isActiveState;
@@ -18,7 +81,7 @@ public class IABrain : MonoBehaviour {
     [Header("Plugs")]
     public IAEyes eyes;
     public IAMouth mouth;
-    public IAHears hears;
+    public IAEars hears;
     public IALegs legs;
     public IAArms arms;
 
@@ -29,10 +92,10 @@ public class IABrain : MonoBehaviour {
     public int minZoneToVisit = 3;
 
     [Header("Memory")]
-    List<IAInformation> hardMemory;
-    List<IAInformation> softMemory;
-    List<IAInformation> consultableMemory;
-    IAInformation informationToCommunicate;
+    List<IAInformation> hardMemory = new List<IAInformation>();
+    List<IAInformation> softMemory = new List<IAInformation>();
+    List<IAInformation> consultableMemory = new List<IAInformation>();
+    IAInformation informationToCommunicate = null;
     float lastSoftMemoryAccess;
     public int maxMemory;
     public AnimationCurve memoryPerformance;
@@ -52,7 +115,13 @@ public class IABrain : MonoBehaviour {
         decisionTimeArray = new float[System.Enum.GetValues(typeof(IAState)).Length];
         for (int i=0; i<decisionTimeArray.Length; i++)
         {
-            decisionTimeArray[i] = decisionTime.Find(c => c.state == (IAState)i).internalStateUpdateTime;
+            DecisionTime decision = decisionTime.Find(c => c.state == (IAState)i);
+            if(decision == null)
+            {
+                decision = new DecisionTime((IAState)i);
+                decisionTime.Add(decision);
+            }
+            decisionTimeArray[i] = decision.internalStateUpdateTime;
         }
 	}
 	
@@ -66,6 +135,7 @@ public class IABrain : MonoBehaviour {
             {
                 mouth.Say(informationToCommunicate);
                 informationToCommunicate = null;
+                HaveMadeDecision();
             }
         }
 
@@ -91,45 +161,26 @@ public class IABrain : MonoBehaviour {
         }
 	}
 
+    #region State
     public void IdleStateUpdate()
     {
         if(isTimeToMakeDecision(IAState.IDLE) && informationToCommunicate == null && !mouth.IsTalking())
         {
             List<Zone> validZones = GetValidZoneToSearch();
             zoneTarget = validZones[Random.Range(0, validZones.Count)];
-            informationToCommunicate = new IAInformation(IAInformation.InformationType.SEARCHZONE, zoneTarget.name);
+            informationToCommunicate = new IAInformation(IAInformation.InformationType.SEARCHZONE, 2f, zoneTarget.name);
             RegisterMemory(informationToCommunicate, true);
 
             legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
             currentState = IAState.WORKING;
+            HaveMadeDecision();
         }
-    }
-
-    List<Zone> GetValidZoneToSearch()
-    {
-        List<Zone> validZoneToVisit = new List<Zone>();
-        validZoneToVisit.AddRange(ZoneManager.instance.allZones);
-        consultableMemory = AccessSoftMemory();
-
-        foreach (IAInformation information in consultableMemory)
-        {
-            if (information.type == IAInformation.InformationType.ZONECLEAR || information.type == IAInformation.InformationType.SEARCHZONE)
-            {
-                Zone designatedZone = ZoneManager.instance.allZones.Find(c => c.name == information.parameters);
-                if (validZoneToVisit.Contains(designatedZone) && validZoneToVisit.Count >= minZoneToVisit)
-                {
-                    validZoneToVisit.Add(designatedZone);
-                } 
-            }
-        }
-
-        return validZoneToVisit;
     }
     
     int checkerCount;
     public void WorkingStateUpdate()
     {
-        if(zoneTarget != null)
+        if(zoneTarget != null && (zoneTarget.IsInsideZone(transform.position) || legs.IsDestinationReached()))
         {
             checkerCount = pendingCheckers.Count;
             eyes.ProcessCheckers(ref pendingCheckers);
@@ -147,7 +198,7 @@ public class IABrain : MonoBehaviour {
                 }
                 else
                 {
-                    informationToCommunicate = new IAInformation(IAInformation.InformationType.ZONECLEAR, zoneTarget.zoneName);
+                    informationToCommunicate = new IAInformation(IAInformation.InformationType.ZONECLEAR, 3f, zoneTarget.zoneName);
                     zoneTarget = null;
                     currentState = IAState.IDLE;
                 }
@@ -155,16 +206,33 @@ public class IABrain : MonoBehaviour {
             }
         }
     }
+    #endregion
+
+    #region Memory
+    public void RegisterMemory(IAInformation information, bool directToBrain = false)
+    {
+        if (directToBrain) information.completion = 1f;
+        if (information.completion >= 1f || Random.Range(0f, 1f) <= information.completion)
+        {
+            hardMemory.Insert(0, information);
+            if(!directToBrain) ProcessInformation(information);
+        }
+
+        if (hardMemory.Count > maxMemory)
+        {
+            hardMemory.Remove(hardMemory.FindLast(c => true));
+        }
+    }
 
     public void ProcessInformation(IAInformation information)
     {
-        switch(information.type)
+        switch (information.type)
         {
             case IAInformation.InformationType.SEARCHZONE:
                 //Captain will verify this order
                 break;
             case IAInformation.InformationType.ZONECLEAR:
-                if(information.parameters == zoneTarget.zoneName)
+                if (information.parameters == zoneTarget.zoneName)
                 {
                     zoneTarget = null;
                     currentState = IAState.IDLE;
@@ -172,21 +240,6 @@ public class IABrain : MonoBehaviour {
                 break;
             case IAInformation.InformationType.ORDER:
                 break;
-        }
-    }
-
-    public void RegisterMemory(IAInformation information, bool directToBrain = false)
-    {
-        if (directToBrain) information.completion = 1f;
-        if (information.completion >= 1f || Random.Range(0f, 1f) <= information.completion)
-        {
-            hardMemory.Insert(0, information);
-            ProcessInformation(information);
-        }
-
-        if (hardMemory.Count > maxMemory)
-        {
-            hardMemory.Remove(hardMemory.FindLast(c => true));
         }
     }
 
@@ -212,9 +265,9 @@ public class IABrain : MonoBehaviour {
             }
         }
     }
+    #endregion
 
-
-
+    #region Decisions
     void HaveMadeDecision()
     {
         lastDecision = Time.time;
@@ -234,4 +287,47 @@ public class IABrain : MonoBehaviour {
     {
         return currentState == IAState.IDLE || currentState == IAState.TALKING || currentState == IAState.WORKING;
     }
+    #endregion
+
+    #region Utils
+    List<Zone> GetValidZoneToSearch()
+    {
+        List<Zone> validZoneToVisit = new List<Zone>();
+        validZoneToVisit.AddRange(ZoneManager.instance.allZones);
+        consultableMemory = AccessSoftMemory();
+
+        foreach (IAInformation information in consultableMemory)
+        {
+            if (information.type == IAInformation.InformationType.ZONECLEAR || information.type == IAInformation.InformationType.SEARCHZONE)
+            {
+                Zone designatedZone = ZoneManager.instance.allZones.Find(c => c.name == information.parameters);
+                if (validZoneToVisit.Contains(designatedZone) && validZoneToVisit.Count >= minZoneToVisit)
+                {
+                    validZoneToVisit.Add(designatedZone);
+                }
+            }
+        }
+
+        return validZoneToVisit;
+    }
+    #endregion
+
+    #region Editor Getters
+#if UNITY_EDITOR
+    public Zone GetZoneTarget()
+    {
+        return zoneTarget;
+    }
+
+    public List<Transform> GetCheckers()
+    {
+        return pendingCheckers;
+    }
+
+    public List<IAInformation> GetSoftMemory()
+    {
+        return softMemory;
+    }
+#endif
+    #endregion
 }

@@ -14,7 +14,6 @@ public class IAArms : MonoBehaviour {
 
     //State
     bool hasWeaponOut = false;
-    bool isLookingAt = false;
     bool isAiming = false;
     bool isShooting = false;
     Vector3 targetAim;
@@ -73,7 +72,6 @@ public class IAArms : MonoBehaviour {
 
     public void Aim(Vector3 target, bool aim = false)
     {
-        isLookingAt = true;
         isAiming = aim;
         targetAim = target;
         targetAim.y = equipedWeapon.canonPosition.position.y;
@@ -81,19 +79,12 @@ public class IAArms : MonoBehaviour {
 
     public void StopAim()
     {
-        isLookingAt = false;
         isAiming = false;
     }
 
     public bool IsAimingWithWeapon()
     {
         return isAiming;
-    }
-
-    float enemyVelocity;
-    public float GetEnemyVelocity()
-    {
-        return enemyVelocity;
     }
 
     public Weapon GetEquipedWeapon()

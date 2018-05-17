@@ -56,61 +56,65 @@ public class Zone : MonoBehaviour {
     //Temp for rect points
     Vector3[] vects = new Vector3[4];
 
-    public void DrawZone()
+    public void DrawZone(bool onlyCheckers = false)
     {
-        //It defines the height of a zone (not controlled by scale)
-        float zoneHeigth = transform.parent.GetComponent<ZoneManager>().zoneHeigth;
-
-        //For all signs
-        for (int i = 0; i < signs.Length; i++)
+        if (!onlyCheckers)
         {
-            //For all corner
-            for (int j = 0; j < vects.Length; j++)
+            //It defines the height of a zone (not controlled by scale)
+            float zoneHeigth = transform.parent.GetComponent<ZoneManager>().zoneHeigth;
+
+            //For all signs
+            for (int i = 0; i < signs.Length; i++)
             {
-                //Sign index is i+1 but loops
-                int signIndex = (j > 0 && j < vects.Length - 1) ? i : i + 1;
-                if (signIndex >= signs.Length) signIndex = 0;
-
-                //Set the corner of a rect, based on zone local scale
-                vects[j] = new Vector3(transform.position.x + (transform.localScale.x * 0.5f * signs[signIndex].x),
-                    (j < 2 ? zoneHeigth : 0),
-                    transform.position.z + (transform.localScale.z * 0.5f * signs[signIndex].y));
-            }
-
-            //Renders opaque if Z test is <, just outline of Z test is >
-            Handles.zTest = UnityEngine.Rendering.CompareFunction.Less;
-            Handles.DrawSolidRectangleWithOutline(vects, new Color(zoneColor.r, zoneColor.g, zoneColor.b, 0.1f), Color.clear);
-
-            Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
-            Handles.DrawSolidRectangleWithOutline(vects, Color.clear, new Color(zoneColor.r, zoneColor.g, zoneColor.b, 0.5f));
-        }
-
-        foreach(ZoneEntry entry in zoneEntries)
-        {
-            //If zone is a selected game object or if it's the first entry on the list
-            if(entry != null && (Selection.activeGameObject == gameObject || entry.zoneConnected.Count > 0 && entry.zoneConnected[0] == this))
-            {
-                //Rendering the entry box
-                for (int i = 0; i < signs.Length; i++)
+                //For all corner
+                for (int j = 0; j < vects.Length; j++)
                 {
-                    vects[i] = new Vector3(entry.transform.position.x + (1f * signs[i].x), 0.01f, entry.transform.position.z + (1f * signs[i].y));
-                }
-                
-                Color colorEntry = new Color(1f, entry.isDoor ? 1f : 0f, 0f, 0.5f);
-                if (!entry.isEnabled)
-                {
-                    colorEntry = new Color(0.5f, 0.5f, 0.5f, 0.3f);
-                }else if(Selection.activeGameObject == entry.gameObject)
-                {
-                    colorEntry = new Color(entry.isDoor ? 0.5f : 0f, 1f, 0f, 0.5f);
+                    //Sign index is i+1 but loops
+                    int signIndex = (j > 0 && j < vects.Length - 1) ? i : i + 1;
+                    if (signIndex >= signs.Length) signIndex = 0;
+
+                    //Set the corner of a rect, based on zone local scale
+                    vects[j] = new Vector3(transform.position.x + (transform.localScale.x * 0.5f * signs[signIndex].x),
+                        (j < 2 ? zoneHeigth : 0),
+                        transform.position.z + (transform.localScale.z * 0.5f * signs[signIndex].y));
                 }
 
-                //Same logic than the zone
+                //Renders opaque if Z test is <, just outline of Z test is >
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Less;
-                Handles.DrawSolidRectangleWithOutline(vects, colorEntry, Color.clear);
+                Handles.DrawSolidRectangleWithOutline(vects, new Color(zoneColor.r, zoneColor.g, zoneColor.b, 0.1f), Color.clear);
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
-                Handles.DrawSolidRectangleWithOutline(vects, Color.clear, colorEntry);
+                Handles.DrawSolidRectangleWithOutline(vects, Color.clear, new Color(zoneColor.r, zoneColor.g, zoneColor.b, 0.5f));
+            }
+
+            foreach (ZoneEntry entry in zoneEntries)
+            {
+                //If zone is a selected game object or if it's the first entry on the list
+                if (entry != null && (Selection.activeGameObject == gameObject || entry.zoneConnected.Count > 0 && entry.zoneConnected[0] == this))
+                {
+                    //Rendering the entry box
+                    for (int i = 0; i < signs.Length; i++)
+                    {
+                        vects[i] = new Vector3(entry.transform.position.x + (1f * signs[i].x), 0.01f, entry.transform.position.z + (1f * signs[i].y));
+                    }
+
+                    Color colorEntry = new Color(1f, entry.isDoor ? 1f : 0f, 0f, 0.5f);
+                    if (!entry.isEnabled)
+                    {
+                        colorEntry = new Color(0.5f, 0.5f, 0.5f, 0.3f);
+                    }
+                    else if (Selection.activeGameObject == entry.gameObject)
+                    {
+                        colorEntry = new Color(entry.isDoor ? 0.5f : 0f, 1f, 0f, 0.5f);
+                    }
+
+                    //Same logic than the zone
+                    Handles.zTest = UnityEngine.Rendering.CompareFunction.Less;
+                    Handles.DrawSolidRectangleWithOutline(vects, colorEntry, Color.clear);
+
+                    Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+                    Handles.DrawSolidRectangleWithOutline(vects, Color.clear, colorEntry);
+                }
             }
         }
 

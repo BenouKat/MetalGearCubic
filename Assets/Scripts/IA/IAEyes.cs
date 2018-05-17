@@ -1,9 +1,38 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(IAEyes))]
+class IAEyesEditor : Editor
+{
+    public void OnSceneGUI()
+    {
+        IAEyes eyes = ((IAEyes)target);
+
+        eyes.DrawEyesEditor();
+    }
+}
+#endif
 
 public class IAEyes : MonoBehaviour {
 
+    #region Editor Getters
+#if UNITY_EDITOR
+    public void DrawEyesEditor()
+    {
+        Handles.color = new Color(1f, 1f, 0f, 0.05f);
+        Handles.DrawSolidArc(transform.position, transform.up, transform.forward, fieldOfView/2f, viewDistance);
+        Handles.DrawSolidArc(transform.position, transform.up, transform.forward, -fieldOfView/2f, viewDistance);
+
+        Handles.color = new Color(1f, 0f, 0f, 0.3f);
+        Handles.DrawSolidArc(transform.position, transform.up, transform.forward, fieldOfView/2f, spotDistance);
+        Handles.DrawSolidArc(transform.position, transform.up, transform.forward, -fieldOfView/2f, spotDistance);
+    }
+#endif
+    #endregion
+    
     public IABrain brain;
 
     [Range(0f, 360f)]
@@ -17,10 +46,10 @@ public class IAEyes : MonoBehaviour {
 
     List<Collider> inFieldOfView;
     int intruderLayer;
-    int friendLayer;
+    //int friendLayer;
     int wallLayer;
 
-    public Transform enemyFocused;
+    Transform enemyFocused;
     float currentVisualAcuity;
 
     private void Start()
@@ -32,7 +61,7 @@ public class IAEyes : MonoBehaviour {
         gameObject.layer = LayerMask.NameToLayer("Detection");
         inFieldOfView = new List<Collider>();
         intruderLayer = LayerMask.NameToLayer("Player");
-        friendLayer = LayerMask.NameToLayer("Enemy");
+        //friendLayer = LayerMask.NameToLayer("Enemy");
         wallLayer = LayerMask.NameToLayer("Unmovable");
     }
 
@@ -59,7 +88,7 @@ public class IAEyes : MonoBehaviour {
         }
     }
 
-    float distanceFromSpotRatio;
+    float distanceFromSpotRatio; // < 0 : Not in range, 0 : View distance, 1 : Spot distance
     public void SearchEnemy()
     {
         foreach (Collider col in inFieldOfView)

@@ -8,12 +8,13 @@ public class IAInformation {
     public InformationType type;
     public string parameters;
     public float completion;
-    public float length;
+    public float length = 1f;
     public float timeReceived;
 
-    public IAInformation(InformationType type, string parameters)
+    public IAInformation(InformationType type, float length, string parameters)
     {
         this.type = type;
         this.parameters = parameters;
+        this.length = length;
     }
 }

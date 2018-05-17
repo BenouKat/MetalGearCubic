@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IAHears : MonoBehaviour {
+public class IAEars : MonoBehaviour {
 
     public IABrain brain;
     public IARadio radio;

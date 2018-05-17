@@ -10,6 +10,7 @@ TagManager:
   - DontSubdivide
   - Floor
   - Intruder
+  - Enemy
   layers:
   - Default
   - TransparentFX

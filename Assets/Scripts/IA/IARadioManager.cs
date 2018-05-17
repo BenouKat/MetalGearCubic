@@ -77,8 +77,6 @@ public class IARadioManager : MonoBehaviour {
 
     public void EndCommunication(Channels channel)
     {
-        //Remove the radio from being online
-        onlineRadio.RemoveAll(c => c.channel == channel);
 
         foreach (IARadio radio in radioNetwork)
         {
@@ -88,6 +86,9 @@ public class IARadioManager : MonoBehaviour {
                 radio.EndMessageReception();
             }
         }
+        
+        //Remove the radio from being online
+        onlineRadio.RemoveAll(c => c.channel == channel);
     }
 
     bool IsChannelOnline(Channels channel)

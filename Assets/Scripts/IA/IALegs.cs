@@ -14,8 +14,8 @@ public class IALegs : MonoBehaviour {
     public Transform currentTarget;
     public bool isDestinationMoving;
     public bool stopIfCanBeSeen;
-    bool hasDestinationSet;
-    bool hasDestinationReached;
+    bool hasSetDestination;
+    bool hasReachedDestination;
     [Range(0f, 1f)]
     public float speedRotation;
 
@@ -81,8 +81,8 @@ public class IALegs : MonoBehaviour {
 
         agent.stoppingDistance = stopDistance;
         agent.speed = GetSpeedValue(speed);
-        hasDestinationSet = false;
-        hasDestinationReached = false;
+        hasSetDestination = false;
+        hasReachedDestination = false;
     }
     
     public float GetSpeedValue(Speed speed)
@@ -109,7 +109,7 @@ public class IALegs : MonoBehaviour {
                 rotationHelper.LookAt(brain.eyes.GetEyesTarget());
             }
         }
-        else if(agent.isStopped && stopIfCanBeSeen && hasDestinationReached)
+        else if(agent.isStopped && stopIfCanBeSeen && hasReachedDestination)
         {
             if (agent.updateRotation)
             {
@@ -136,17 +136,22 @@ public class IALegs : MonoBehaviour {
         if (stopIfCanBeSeen && brain.eyes.CanBeSeen(currentTarget, brain.eyes.viewDistance, currentTarget.gameObject.layer))
         {
             agent.isStopped = true;
-            if (!isDestinationMoving) hasDestinationReached = true;
+            if (!isDestinationMoving) hasReachedDestination = true;
 
-        } else if (isDestinationMoving || !hasDestinationSet)
+        } else if (isDestinationMoving || !hasSetDestination)
         {
             agent.isStopped = false;
             agent.SetDestination(currentTarget.position);
-            hasDestinationSet = true;
+            hasSetDestination = true;
 
         }else if(!isDestinationMoving && agent.remainingDistance <= agent.stoppingDistance && agent.pathStatus == NavMeshPathStatus.PathComplete)
         {
-            hasDestinationReached = true;
+            hasReachedDestination = true;
         }
+    }
+
+    public bool IsDestinationReached()
+    {
+        return hasReachedDestination;
     }
 }
