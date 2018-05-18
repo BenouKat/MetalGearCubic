@@ -2047,7 +2047,7 @@ MonoBehaviour:
   currentTarget: {fileID: 0}
   isDestinationMoving: 0
   stopIfCanBeSeen: 0
-  speedRotation: 0.4
+  speedRotation: 0.2
   speedValues:
   - 0.2
   - 2
@@ -2072,6 +2072,19 @@ MonoBehaviour:
   legs: {fileID: 114867068217679614}
   arms: {fileID: 114974075441090114}
   minZoneToVisit: 3
+  checkersDivisions:
+  - maxAngle: 45
+    chance: 50
+    maxDistance: 0
+    selectedChecker: {fileID: 0}
+  - maxAngle: 90
+    chance: 80
+    maxDistance: 0
+    selectedChecker: {fileID: 0}
+  - maxAngle: 125
+    chance: 95
+    maxDistance: 0
+    selectedChecker: {fileID: 0}
   maxMemory: 50
   memoryPerformance:
     serializedVersion: 2
@@ -2095,13 +2108,13 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 600
+      time: 300
       value: 0.1
-      inSlope: -0.005296644
-      outSlope: -0.005296644
+      inSlope: -0.006619971
+      outSlope: -0.006619971
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.021454422
+      inWeight: 0.039380137
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -2139,14 +2152,14 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.5
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 30
   avoidancePriority: 50
-  m_AngularSpeed: 120
+  m_AngularSpeed: 360
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 1.35
-  m_BaseOffset: 0.85
+  m_Height: 1.23
+  m_BaseOffset: 0.73
   m_WalkableMask: 1
   m_ObstacleAvoidanceType: 4

@@ -2,7 +2,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(IARadioManager))]
+class IARadioManagerEditor : Editor
+{
+    public void OnSceneGUI()
+    {
+        IARadioManager radio = ((IARadioManager)target);
+
+        radio.DrawRadioEditor();
+    }
+}
+#endif
+
 public class IARadioManager : MonoBehaviour {
+
+    #region Editor Getters
+#if UNITY_EDITOR
+    public void DrawRadioEditor()
+    {
+        foreach(IARadio radio in radioNetwork)
+        {
+            radio.transform.parent.parent.GetComponent<IABrain>().DrawBrainEditor();
+        }
+    }
+#endif
+    #endregion
 
     public static IARadioManager instance;
     private void Awake()

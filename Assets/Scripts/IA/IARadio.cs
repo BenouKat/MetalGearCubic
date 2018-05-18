@@ -40,7 +40,6 @@ public class IARadio : MonoBehaviour {
     public void BeginMessageReception(IAInformation information)
     {
         informationReceived = information;
-        Debug.Log("begin message reception : " + informationReceived.completion);
         receivingMessage = true;
         if(OnMessageReceptionBegin != null) OnMessageReceptionBegin.Invoke(informationReceived);
     }
@@ -48,13 +47,11 @@ public class IARadio : MonoBehaviour {
     public void ProcessMessageReception(float completion)
     {
         informationReceived.completion = completion;
-        Debug.Log("process message reception : " + informationReceived.completion);
     }
 
     public void EndMessageReception()
     {
         receivingMessage = false;
-        Debug.Log("end message reception : " + informationReceived.completion);
         if (OnMessageReceptionEnd != null) OnMessageReceptionEnd.Invoke(informationReceived);
     }
 

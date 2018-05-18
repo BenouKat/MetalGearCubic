@@ -18,6 +18,7 @@ public class IALegs : MonoBehaviour {
     bool hasReachedDestination;
     [Range(0f, 1f)]
     public float speedRotation;
+    float seenDistance;
 
     public enum Speed { SNEAK, WALK, RUN, DASH }
     public float[] speedValues = new float[4] { 0.5f, 2f, 5f, 7f };
@@ -73,11 +74,12 @@ public class IALegs : MonoBehaviour {
         }
     }
 
-    public void SetDestination(Transform target, Speed speed, bool stopIfCanBeSeen = false, float stopDistance = 0f)
+    public void SetDestination(Transform target, Speed speed, bool stopIfCanBeSeen = false, float seenDistance = 0f, float stopDistance = 0f)
     {
         currentTarget = target;
         this.stopIfCanBeSeen = stopIfCanBeSeen;
         this.isDestinationMoving = stopDistance > 0f;
+        this.seenDistance = seenDistance <= 0f ? brain.eyes.spotDistance : seenDistance;
 
         agent.stoppingDistance = stopDistance;
         agent.speed = GetSpeedValue(speed);
@@ -92,9 +94,12 @@ public class IALegs : MonoBehaviour {
     
     private void Update()
     {
-        RotationUpdate();
+        if(currentTarget != null)
+        {
+            RotationUpdate();
 
-        PositionUpdate();
+            PositionUpdate();
+        }
     }
 
     Vector3 lookAtPosition;
@@ -133,7 +138,7 @@ public class IALegs : MonoBehaviour {
 
     void PositionUpdate()
     {
-        if (stopIfCanBeSeen && brain.eyes.CanBeSeen(currentTarget, brain.eyes.viewDistance, currentTarget.gameObject.layer))
+        if (stopIfCanBeSeen && brain.eyes.CanBeSeen(currentTarget, seenDistance, currentTarget.gameObject.layer))
         {
             agent.isStopped = true;
             if (!isDestinationMoving) hasReachedDestination = true;

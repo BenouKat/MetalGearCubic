@@ -57,7 +57,7 @@ public class IAEyes : MonoBehaviour {
         if (brain == null) brain = transform.parent.GetComponent<IABrain>();
 
         SphereCollider sphere = gameObject.AddComponent<SphereCollider>();
-        sphere.radius = viewDistance;
+        sphere.radius = viewDistance / brain.transform.localScale.x;
         gameObject.layer = LayerMask.NameToLayer("Detection");
         inFieldOfView = new List<Collider>();
         intruderLayer = LayerMask.NameToLayer("Player");
@@ -145,21 +145,39 @@ public class IAEyes : MonoBehaviour {
 
     public bool IsOnSight(Transform target, float distance, int layerTarget)
     {
-        if (Vector3.Angle(transform.forward, target.position - transform.position) <= fieldOfView)
+        if (Vector3.Angle(transform.forward, target.position - transform.position) <= fieldOfView/2f)
         {
             return CanBeSeen(target, distance, layerTarget);
         }
         return false;
     }
 
+    int layerRaycast;
+    float distanceToTarget;
+    bool raycastTest;
     public bool CanBeSeen(Transform target, float distance, int layerTarget)
     {
-        if (Physics.Raycast(transform.position, target.position - transform.position, out info, distance, 1 << layerTarget | 1 << wallLayer))
+        layerRaycast = 1 << layerTarget | 1 << wallLayer;
+        if (layerTarget <= 0)
         {
-            if (layerTarget < 0 || info.collider.gameObject.layer == layerTarget)
+            layerRaycast = 1 << wallLayer;
+            distanceToTarget = Vector3.Distance(target.position, transform.position);
+            if (distance > distanceToTarget)
+            {
+                distance = distanceToTarget;
+            }
+        }
+        
+        if (Physics.Raycast(transform.position, target.position - transform.position, out info, distance, layerRaycast))
+        {
+            if ((layerTarget <= 0 && info.collider.tag == "Floor") || info.collider.gameObject.layer == layerTarget)
             {
                 return true;
             }
+        }
+        else if(layerTarget <= 0 && distanceToTarget <= distance)
+        {
+            return true;
         }
         return false;
     }
@@ -188,7 +206,7 @@ public class IAEyes : MonoBehaviour {
 
             selectedChecker = checkers[memoryIndex];
 
-            if (Vector3.Angle(transform.forward, selectedChecker.position - transform.position) <= fieldOfView)
+            if (Vector3.Angle(transform.forward, selectedChecker.position - transform.position) <= fieldOfView/2f)
             {
                 if (Physics.Raycast(transform.position, selectedChecker.position - transform.position, out info, spotDistance, 1 << wallLayer))
                 {

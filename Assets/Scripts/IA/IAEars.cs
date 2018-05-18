@@ -35,7 +35,6 @@ public class IAEars : MonoBehaviour {
     void OnMessageReceptionEnd(IAInformation information)
     {
         listenMessage = false;
-        information.timeReceived = Time.time;
         brain.RegisterMemory(information);
     }
 
