@@ -674,7 +674,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1894174429676648}
   m_LocalRotation: {x: -0, y: -0.7200086, z: -0, w: 0.69396514}
-  m_LocalPosition: {x: -17.09, y: 0.6, z: -7.736}
+  m_LocalPosition: {x: 7.2, y: 0.6, z: -10.2}
   m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_Children:
   - {fileID: 4533629957391816}
@@ -1951,6 +1951,7 @@ MonoBehaviour:
   brain: {fileID: 114920914728471186}
   radio: {fileID: 114290058675121012}
   IsFocus: 1
+  delayStopListening: {x: 0.25, y: 0.5}
 --- !u!114 &114460198225566926
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1983,7 +1984,7 @@ MonoBehaviour:
   brain: {fileID: 114920914728471186}
   fieldOfView: 100
   viewDistance: 9
-  spotDistance: 4.3
+  spotDistance: 4
   visualAcuityByDistance:
     serializedVersion: 2
     m_Curve:
@@ -2066,14 +2067,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isActiveState: 0
   currentState: 2
+  behavior: 0
   eyes: {fileID: 114470589311681146}
   mouth: {fileID: 114659412972446514}
-  hears: {fileID: 114345878504926098}
+  ears: {fileID: 114345878504926098}
   legs: {fileID: 114867068217679614}
   arms: {fileID: 114974075441090114}
   minZoneToVisit: 3
   checkersDivisions:
-  - maxAngle: 45
+  - maxAngle: 60
     chance: 50
     maxDistance: 0
     selectedChecker: {fileID: 0}
@@ -2081,7 +2083,7 @@ MonoBehaviour:
     chance: 80
     maxDistance: 0
     selectedChecker: {fileID: 0}
-  - maxAngle: 125
+  - maxAngle: 135
     chance: 95
     maxDistance: 0
     selectedChecker: {fileID: 0}
@@ -2099,7 +2101,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 60
+      time: 45
       value: 1
       inSlope: 0
       outSlope: 0
@@ -2108,13 +2110,22 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 300
-      value: 0.1
-      inSlope: -0.006619971
-      outSlope: -0.006619971
+      time: 150.4806
+      value: 0.30156648
+      inSlope: -0.0030556358
+      outSlope: -0.0030556358
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.039380137
+      inWeight: 0.33333334
+      outWeight: 0.080386855
+    - serializedVersion: 3
+      time: 300
+      value: 0.1
+      inSlope: -0.00038502814
+      outSlope: -0.00038502814
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.16720238
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -2126,6 +2137,8 @@ MonoBehaviour:
     internalStateUpdateTime: 1
   - state: 3
     internalStateUpdateTime: 0.2
+  friendly: 25
+  orientation: 60
 --- !u!114 &114974075441090114
 MonoBehaviour:
   m_ObjectHideFlags: 1

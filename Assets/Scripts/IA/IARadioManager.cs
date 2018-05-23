@@ -25,7 +25,11 @@ public class IARadioManager : MonoBehaviour {
     {
         foreach(IARadio radio in radioNetwork)
         {
-            radio.transform.parent.parent.GetComponent<IABrain>().DrawBrainEditor();
+            if(radio.gameObject.name == "Radio")
+            {
+                radio.transform.parent.parent.GetComponent<IABrain>().DrawBrainEditor();
+            }
+            
         }
     }
 #endif
@@ -123,7 +127,7 @@ public class IARadioManager : MonoBehaviour {
         return onlineRadio.Exists(c => c.channel == channel);
     }
 
-    bool IsRadioOnline(IARadio radio)
+    public bool IsRadioOnline(IARadio radio)
     {
         return onlineRadio.Contains(radio);
     }

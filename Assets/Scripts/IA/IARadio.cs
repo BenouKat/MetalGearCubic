@@ -32,7 +32,7 @@ public class IARadio : MonoBehaviour {
         IARadioManager.instance.BeginCommunication(this, information, channel);
     }
 
-    public void InterruptTalk()
+    public void StopTalk()
     {
         IARadioManager.instance.EndCommunication(channel);
     }

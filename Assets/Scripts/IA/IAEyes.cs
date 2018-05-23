@@ -22,11 +22,11 @@ public class IAEyes : MonoBehaviour {
 #if UNITY_EDITOR
     public void DrawEyesEditor()
     {
-        Handles.color = new Color(1f, 1f, 0f, 0.05f);
+        Handles.color = new Color(1f, 1f, 0f, 0.03f);
         Handles.DrawSolidArc(transform.position, transform.up, transform.forward, fieldOfView/2f, viewDistance);
         Handles.DrawSolidArc(transform.position, transform.up, transform.forward, -fieldOfView/2f, viewDistance);
 
-        Handles.color = new Color(1f, 0f, 0f, 0.3f);
+        Handles.color = new Color(1f, 0f, 0f, 0.1f);
         Handles.DrawSolidArc(transform.position, transform.up, transform.forward, fieldOfView/2f, spotDistance);
         Handles.DrawSolidArc(transform.position, transform.up, transform.forward, -fieldOfView/2f, spotDistance);
     }
@@ -170,7 +170,7 @@ public class IAEyes : MonoBehaviour {
         
         if (Physics.Raycast(transform.position, target.position - transform.position, out info, distance, layerRaycast))
         {
-            if ((layerTarget <= 0 && info.collider.tag == "Floor") || info.collider.gameObject.layer == layerTarget)
+            if ((layerTarget <= 0 && info.collider.CompareTag("Floor")) || info.collider.gameObject.layer == layerTarget)
             {
                 return true;
             }
@@ -210,7 +210,7 @@ public class IAEyes : MonoBehaviour {
             {
                 if (Physics.Raycast(transform.position, selectedChecker.position - transform.position, out info, spotDistance, 1 << wallLayer))
                 {
-                    if (info.collider.tag == "Floor")
+                    if (info.collider.CompareTag("Floor"))
                     {
                         checkers.Remove(selectedChecker);
                     }

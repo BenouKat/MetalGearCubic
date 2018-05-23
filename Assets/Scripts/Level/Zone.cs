@@ -173,7 +173,7 @@ public class Zone : MonoBehaviour {
                     //Once we have found our entry, we just do a raycast from the sky to the ground to check if it's not just 2 walls side by side
                     if(Physics.Raycast(midPoint + Vector3.up*100f, -Vector3.up, out info, 101f, 1 << LayerMask.NameToLayer("Unmovable")))
                     {
-                        if(info.collider.tag == "Floor")
+                        if(info.collider.CompareTag("Floor"))
                         {
                             InstanceEntry(midPoint, entryDistanceMatch);
                         }
@@ -193,7 +193,7 @@ public class Zone : MonoBehaviour {
                             midPoint = Vector3.Lerp(endPoint, startPoint, 0.5f);
                             if (Physics.Raycast(midPoint + Vector3.up * 100f, -Vector3.up, out info, 101f, 1 << LayerMask.NameToLayer("Unmovable")))
                             {
-                                if (info.collider.tag == "Floor")
+                                if (info.collider.CompareTag("Floor"))
                                 {
                                     InstanceEntry(midPoint, entryDistanceMatch);
                                 }
@@ -278,7 +278,7 @@ public class Zone : MonoBehaviour {
             {
                 if(Physics.Raycast(transform.position + (new Vector3(xProgression*transform.localScale.x, 10f, zProgression*transform.localScale.z)), -Vector3.up, out info, 11f, 1 << LayerMask.NameToLayer("Unmovable")))
                 {
-                    if(info.collider.tag == "Floor")
+                    if(info.collider.CompareTag("Floor"))
                     {
                         InstanceChecker(xProgression, zProgression);
                     }
