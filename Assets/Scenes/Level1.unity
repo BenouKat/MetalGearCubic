@@ -4209,8 +4209,8 @@ MonoBehaviour:
   m_LockStageInInspector: 
   m_StreamingVersion: 20170927
   m_Priority: 10
-  m_LookAt: {fileID: 1004883981}
-  m_Follow: {fileID: 1004883981}
+  m_LookAt: {fileID: 1955117469}
+  m_Follow: {fileID: 1955117469}
   m_ShowDebugText: 0
   m_ChildCameras:
   - {fileID: 701285767}
@@ -10538,7 +10538,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_CollideAgainst:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 0
   m_IgnoreTag: 
   m_MinimumDistanceFromTarget: 0.1
   m_AvoidObstacles: 0
@@ -13660,8 +13660,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1062276919}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.125, y: 0, z: 21.25}
-  m_LocalScale: {x: 3.25, y: 5, z: 15.5}
+  m_LocalPosition: {x: -2.375, y: 0, z: 21.25}
+  m_LocalScale: {x: 4.75, y: 5, z: 15.5}
   m_Children: []
   m_Father: {fileID: 77915838}
   m_RootOrder: 25
@@ -14782,7 +14782,6 @@ MonoBehaviour:
     model: {fileID: 1330839990693902, guid: d6314e5cc37bb1246b7872fbcde2bce7, type: 2}
   - type: 1
     model: {fileID: 1330839990693902, guid: ec8903e476c8a52409ec47fb489eb3e7, type: 2}
-  woo: 0
 --- !u!1 &1143210319
 GameObject:
   m_ObjectHideFlags: 0
@@ -24035,7 +24034,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35fbe54fdaebdb2458acb897c8ca67dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  virtualCamera: {fileID: 2118088128}
+  virtualCamera: {fileID: 750229925}
   startingCamera: 0
   isTracking: 0
   connectedZone:
