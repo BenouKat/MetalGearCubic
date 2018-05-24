@@ -676,6 +676,7 @@ GameObject:
   - component: {fileID: 114145492524315696}
   - component: {fileID: 114212224226614674}
   - component: {fileID: 114569756993880742}
+  - component: {fileID: 114953538700801068}
   m_Layer: 10
   m_Name: Player
   m_TagString: Intruder
@@ -776,7 +777,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1894174429676648}
   m_LocalRotation: {x: -0, y: -0.7200086, z: -0, w: 0.69396514}
-  m_LocalPosition: {x: -17.023, y: 0.6, z: -12.355}
+  m_LocalPosition: {x: -11.04, y: 0.6, z: -10.25}
   m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_Children:
   - {fileID: 4533629957391816}
@@ -2890,3 +2891,15 @@ MonoBehaviour:
   minSpeed: 0.5
   maxSpeed: 3
   maxAngleZ: 3
+--- !u!114 &114953538700801068
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1894174429676648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ca8793ab920df8468701a4c68c0db18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 1
