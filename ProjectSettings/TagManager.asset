@@ -40,8 +40,8 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - PostProcess
+  - PoolObject
   - CameraZone
   - MouseEvent
   m_SortingLayers:
