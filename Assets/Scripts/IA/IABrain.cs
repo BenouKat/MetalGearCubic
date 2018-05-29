@@ -124,6 +124,20 @@ public class IABrain : MonoBehaviour {
             this.chance = chance;
         }
     }
+    
+    internal class PatrolStatus
+    {
+        public string unitID;
+        public string currentZone;
+        public float lastMessage;
+
+        public PatrolStatus(string unitID, string currentZone, float lastMessage)
+        {
+            this.unitID = unitID;
+            this.currentZone = currentZone;
+            this.lastMessage = lastMessage;
+        }
+    }
 
     public bool isActiveState;
     public enum IAState { WORKING, TALKING, IDLE, SPOT, FREEZE, ALERT, DANGER, PRUDENCE }
@@ -137,20 +151,24 @@ public class IABrain : MonoBehaviour {
     public IAEars ears;
     public IALegs legs;
     public IAArms arms;
+    public string unitID;
 
     [Header("Targets")]
     Zone zoneTarget;
-    Transform liveTarget;
+    public Zone defaultZone;
     List<Transform> pendingCheckers;
     public int minZoneToVisit = 3;
     [SerializeField]
     List<BestChecker> checkersDivisions;
+    Zone meetingTarget;
+    Transform talkingTarget;
 
     [Header("Memory")]
     List<IAInformation> hardMemory = new List<IAInformation>();
     List<IAInformation> softMemory = new List<IAInformation>();
     List<IAInformation> consultableMemory = new List<IAInformation>();
     List<IAInformation> informationToCommunicate = new List<IAInformation>();
+    IAInformation orderWaitingConfirmation;
     float lastSoftMemoryAccess;
     public int maxMemory;
     public AnimationCurve memoryPerformance;
@@ -161,6 +179,11 @@ public class IABrain : MonoBehaviour {
     float[] decisionTimeArray;
     float lastDecision = -100f;
 
+    [Header("Officer info")]
+    public float confirmationOrderTimeout = 20f;
+    public float lostUnitTimeout = 30f;
+    List<PatrolStatus> patrolStatus;
+
     [Header("Personality")]
     [Range(0f, 100f)]
     public float friendly;
@@ -170,6 +193,7 @@ public class IABrain : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        unitID = UnitManager.instance.GetNewUnitID(behavior.ToString());
         hardMemory = new List<IAInformation>();
         softMemory = new List<IAInformation>();
         pendingCheckers = new List<Transform>();
@@ -220,24 +244,63 @@ public class IABrain : MonoBehaviour {
             currentState = IAState.SPOT;
         }
 
+        if(behavior == IABehaviour.OFFICER && orderWaitingConfirmation != null)
+        {
+            if(Time.time - orderWaitingConfirmation.timeCreation > confirmationOrderTimeout)
+            {
+                currentState = IAState.IDLE;
+            }
+        }
+
         //Process state
         switch (currentState)
         {
             case IAState.IDLE:
-                IdleStateUpdate();
+                switch(behavior)
+                {
+                    case IABehaviour.PATROL:
+                    case IABehaviour.INTERLEADER:
+                    case IABehaviour.INTERPATROL:
+                        IdleStatePatrolUpdate();
+                        break;
+                    case IABehaviour.OFFICER:
+                        IdleStateOfficerUpdate();
+                        break;
+                }
                 break;
             case IAState.WORKING:
-                WorkingStateUpdate();
+                switch (behavior)
+                {
+                    case IABehaviour.PATROL:
+                    case IABehaviour.INTERLEADER:
+                    case IABehaviour.INTERPATROL:
+                        WorkingStatePatrolUpdate();
+                        break;
+                    case IABehaviour.OFFICER:
+                        WorkingStateOfficerUpdate();
+                        break;
+                }
                 break;
         }
 	}
 
     #region State
-    public void IdleStateUpdate()
+    public void IdleStatePatrolUpdate()
     {
         if(isTimeToMakeDecision(IAState.IDLE) && HasNothingToSay() && !mouth.IsTalking())
         {
-            IAInformation order = AccessSoftMemory().Find(c => c.toDo && c.type == IAInformation.InformationType.SEARCHZONE);
+            IAInformation order = AccessSoftMemory().Find(c => c.toDo && c.type == IAInformation.InformationType.MEETOFFICER);
+            if(order != null)
+            {
+                AccessSoftMemory().Remove(order);
+                currentState = IAState.TALKING;
+                meetingTarget = ZoneManager.instance.allZones.Find(c => c.zoneName.Contains("Officer"));
+                legs.SetDestinationToClosest(meetingTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
+                HaveMadeDecision();
+                return;
+            }
+
+            order = AccessSoftMemory().Find(c => c.toDo && c.type == IAInformation.InformationType.SEARCHZONE);
             if(order != null)
             {
                 AccessSoftMemory().Remove(order);
@@ -254,9 +317,86 @@ public class IABrain : MonoBehaviour {
             HaveMadeDecision();
         }
     }
-    
+
+    public void IdleStateOfficerUpdate()
+    {
+        if (isTimeToMakeDecision(IAState.IDLE) && HasNothingToSay() && !mouth.IsTalking() && !ears.IsListening())
+        {
+            IAInformation order = hardMemory.Find(c => c.toDo && c.type == IAInformation.InformationType.DEVIATETOZONE);
+            if (order != null && patrolStatus.Count > 0)
+            {
+                UpdatePatrolStatus();
+                if (!patrolStatus.Exists(c => c.lastMessage < order.timeCreation))
+                {
+                    hardMemory.RemoveAll(c => c.toDo);
+                    Zone zoneToSearch = GetValidZoneToSearch().FindLast(c => true);
+                    TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, GetClosestUnitName(zoneToSearch) + "$" + zoneToSearch, true);
+                }
+                else
+                {
+                    ConfirmDisappearedUnit(order.timeCreation);
+                }
+            }
+            else
+            {
+                if (orderWaitingConfirmation != null)
+                {
+                    UpdatePatrolStatus();
+                    if(orderWaitingConfirmation.type == IAInformation.InformationType.MEETOFFICER)
+                    {
+                        PatrolStatus pat = patrolStatus.Find(c => c.unitID == orderWaitingConfirmation.parameters);
+                        if (pat != null && pat.lastMessage > orderWaitingConfirmation.timeCreation)
+                        {
+                            TellInformationToOthers(IAInformation.InformationType.MEETOFFICER, 4f, orderWaitingConfirmation.parameters, true);
+                        }
+                        else
+                        {
+                            ConfirmDisappearedUnit(orderWaitingConfirmation.timeCreation);
+                        }
+                    }
+                    else
+                    {
+                        if (patrolStatus.Exists(c => c.lastMessage > orderWaitingConfirmation.timeCreation))
+                        {
+                            TellInformationToOthers(IAInformation.InformationType.BRINGTOOFFICER, 4f, orderWaitingConfirmation.parameters, true);
+                        }
+                        else
+                        {
+                            ConfirmDisappearedUnit(orderWaitingConfirmation.timeCreation);
+                        }
+                    }
+                }
+                else
+                {
+                    float rangeIdle = Random.Range(0f, 100f);
+                    if (rangeIdle < 33f)
+                    {
+                        List<string> allPatrol = UnitManager.instance.GetAllUnits().FindAll(c => c.Contains("PATROL"));
+                        string patrolSelected = allPatrol[Random.Range(0, allPatrol.Count)];
+                        TellInformationToOthers(IAInformation.InformationType.MEETOFFICER, 4f, patrolSelected, true);
+                        currentState = IAState.WORKING;
+                    }
+                    else if (rangeIdle >= 33f && rangeIdle < 66f)
+                    {
+                        Zone zoneToTake = ZoneManager.instance.allZones.Find(c => c.zoneEntries.Count == 1 && c != defaultZone);
+                        TellInformationToOthers(IAInformation.InformationType.BRINGTOOFFICER, 4f, zoneToTake.zoneName + "$" + Random.Range(0, 2).ToString(), true);
+                        currentState = IAState.WORKING;
+                    }
+                    else
+                    {
+                        UpdatePatrolStatus();
+                        TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
+                        RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.DEVIATETOZONE, 0f, "", true));
+                    }
+                }
+            }
+
+            HaveMadeDecision();
+        }
+    }
+
     int checkerCount;
-    public void WorkingStateUpdate()
+    public void WorkingStatePatrolUpdate()
     {
         if (zoneTarget != null && (zoneTarget.IsInsideZone(transform.position) || legs.IsDestinationReached()))
         {
@@ -282,6 +422,28 @@ public class IABrain : MonoBehaviour {
                 }
                 HaveMadeDecision();
             }
+        }
+    }
+
+    public void WorkingStateOfficerUpdate()
+    {
+        if (!defaultZone.IsInsideZone(transform.position))
+        {
+            if (legs.IsDestinationReached())
+            {
+                legs.SetDestination(defaultZone.transform, IALegs.Speed.WALK);
+            }
+        }
+        else if (isTimeToMakeDecision(IAState.WORKING))
+        {
+            if(Random.Range(0f, 100f) < 5f)
+            {
+                currentState = IAState.IDLE;
+            }else if (Random.Range(0f, 100f) < 25f)
+            {
+                legs.SetDestination(defaultZone.zoneChecker[Random.Range(0, defaultZone.zoneChecker.Count)], IALegs.Speed.WALK);
+            }
+            HaveMadeDecision();
         }
     }
     #endregion
@@ -325,12 +487,11 @@ public class IABrain : MonoBehaviour {
         switch (information.type)
         {
             case IAInformation.InformationType.SEARCHZONE:
-
                 if (zoneTarget != null)
                 {
-                    if(zoneTarget.zoneName == information.parameters)
+                    if (zoneTarget.zoneName == information.parameters)
                     {
-                        if(zoneTarget.IsInsideZone(transform.position))
+                        if (zoneTarget.IsInsideZone(transform.position))
                         {
                             TellInformationToOthers(IAInformation.InformationType.ALREADYZONE, 2f, information.parameters, true);
                         }
@@ -339,18 +500,19 @@ public class IABrain : MonoBehaviour {
                             CancelZoneTarget();
                         }
                     }
-                    else if(Random.Range(0f, 100f) <= friendly
+                    else if (Random.Range(0f, 100f) <= friendly
                     && !AccessSoftMemory().Exists(c => c.toDo)
                     && zoneTarget.zoneEntries.Exists(c => c.zoneConnected.Exists(d => d.zoneName == information.parameters)))
                     {
                         informationToCommunicate.RemoveAll(c => c.type == IAInformation.InformationType.SEARCHZONE);
                         TellInformationToOthers(IAInformation.InformationType.REPLACEZONE, 3f, information.parameters, true);
-                        RegisterMemory(new IAInformation(IAInformation.InformationType.SEARCHZONE, 0f, information.parameters, true), true);
+                        RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, information.parameters, true), true);
                     }
                 }
                 break;
 
             case IAInformation.InformationType.ZONECLEAR:
+                if (behavior == IABehaviour.OFFICER) break;
                 if (zoneTarget != null && information.parameters == zoneTarget.zoneName)
                 {
                     CancelZoneTarget();
@@ -359,41 +521,83 @@ public class IABrain : MonoBehaviour {
                 break;
 
             case IAInformation.InformationType.REPLACEZONE:
+                if (behavior == IABehaviour.OFFICER) break;
                 if (zoneTarget != null && information.parameters == zoneTarget.zoneName)
                 {
                     CancelZoneTarget();
-                    TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, "");
-                    RegisterMemory(new IAInformation(IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
+                    TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
+                    RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
                 }
                 else if (zoneTarget == null && informationToCommunicate.Exists(c => c.type == IAInformation.InformationType.ZONECLEAR && c.parameters == information.parameters))
                 {
-                    TellInformationToOthers(IAInformation.InformationType.NOK, 0.5f, "");
+                    TellInformationToOthers(IAInformation.InformationType.NOK, 0.5f, information.id.ToString());
                 }
                 else
                 {
-                    RegisterMemory(new IAInformation(IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
+                    RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
                 }
                 ForgetThisZoneTarget(information.parameters);
                 break;
 
             case IAInformation.InformationType.ALREADYZONE:
+                if (behavior == IABehaviour.OFFICER) break;
                 if (zoneTarget != null && information.parameters == zoneTarget.zoneName)
                 {
                     CancelZoneTarget();
-                    TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, "");
+                    TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
                 }
                 ForgetThisZoneTarget(information.parameters);
-                RegisterMemory(new IAInformation(IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
+                RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
                 break;
 
-            case IAInformation.InformationType.DEVIATEZONE:
-                if (zoneTarget != null && information.parameters.Split('$')[0] == zoneTarget.zoneName)
+            case IAInformation.InformationType.DEVIATETOZONE:
+                if (behavior == IABehaviour.OFFICER) break;
+                string[] parametersSplit = information.parameters.Split('$');
+                if (parametersSplit[0] == unitID || parametersSplit[0] == "all")
                 {
-                    SetZoneTarget(ZoneManager.instance.allZones.Find(c => c.zoneName == information.parameters.Split('$')[1]));
-                    TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, "");
-                    TellInformationToOthers(IAInformation.InformationType.SEARCHZONE, 0.5f, zoneTarget.zoneName);
-                    legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
+                    SetZoneTarget(ZoneManager.instance.allZones.Find(c => c.zoneName == parametersSplit[1]));
+                    TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
+                    legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.RUN);
                 }
+                break;
+            case IAInformation.InformationType.MEETOFFICER:
+                if(unitID == information.parameters)
+                {
+                    zoneTarget = null;
+                    TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
+                    currentState = IAState.TALKING;
+                    meetingTarget = ZoneManager.instance.allZones.Find(c => c.zoneName.Contains("Officer"));
+                }
+                break;
+            case IAInformation.InformationType.BRINGTOOFFICER: //To do : Comment faire pour qu'une seule IA ne le fasse
+                string[] parametersBrings = information.parameters.Split('$');
+                TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
+                if (parametersBrings[1] == "1")
+                {
+                    CancelZoneTarget();
+                }
+                RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.BRINGTOOFFICER, 0f, information.id.ToString() + "$" + parametersBrings[0], true), true);
+                RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, parametersBrings[0], true), true);
+                RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.MEETOFFICER, 0f, parametersBrings[0], true), true);
+                break;
+            case IAInformation.InformationType.ASKSTATUS:
+                if(information.parameters == unitID || information.parameters == "all")
+                {
+                    TellInformationToOthers(IAInformation.InformationType.TELLSTATUS, 2f, unitID + "$" + ZoneManager.instance.GetZone(transform.position).zoneName);
+                }
+                break;
+            case IAInformation.InformationType.TELLSTATUS:
+                string[] parametersStatus = information.parameters.Split('$');
+                if (behavior == IABehaviour.OFFICER)
+                {
+                    UpdatePatrolStatus(new PatrolStatus(parametersStatus[0], parametersStatus[1], Time.time));
+                }
+                break;
+            case IAInformation.InformationType.OK:
+                if (orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
+                break;
+            case IAInformation.InformationType.NOK:
+                if (orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
                 break;
         }
     }
@@ -445,10 +649,19 @@ public class IABrain : MonoBehaviour {
     #endregion
 
     #region Utils
+    IAInformation infoToTell;
     public void TellInformationToOthers(IAInformation.InformationType type, float length, string parameters, bool order = false)
     {
-        informationToCommunicate.Add(new IAInformation(type, length, parameters, order));
-        if(!order) RegisterMemory(informationToCommunicate.FindLast(c => true), true);
+        infoToTell = new IAInformation(unitID, type, length, parameters, order);
+        informationToCommunicate.Add(infoToTell);
+        if(order)
+        {
+            if(infoToTell.NeedConfirmation()) orderWaitingConfirmation = infoToTell;
+        }
+        else
+        {
+            RegisterMemory(infoToTell);
+        }
     }
 
     public void RemoveSameInformationToTell(IAInformation info)
@@ -464,7 +677,7 @@ public class IABrain : MonoBehaviour {
     void ForgetThisZoneTarget(string zoneName)
     {
         informationToCommunicate.RemoveAll(c => c.type == IAInformation.InformationType.REPLACEZONE && c.parameters == zoneName);
-        AccessSoftMemory().RemoveAll(c => c.toDo && c.type == IAInformation.InformationType.SEARCHZONE && c.parameters == zoneName);
+        hardMemory.RemoveAll(c => c.toDo && c.type == IAInformation.InformationType.SEARCHZONE && c.parameters == zoneName);
     }
 
     void CancelZoneTarget()
@@ -579,6 +792,77 @@ public class IABrain : MonoBehaviour {
         float randomSeed = Random.Range(0f, chanceMax);
 
         return checkersDivisions.Find(c => c.selectedChecker != null && randomSeed <= c.chance).selectedChecker;
+    }
+
+    void UpdatePatrolStatus()
+    {
+        foreach(IAInformation information in AccessSoftMemory())
+        {
+            if(information.from != unitID && (!patrolStatus.Exists(c => c.unitID == information.from) || information.timeReceived > patrolStatus.Find(c => c.unitID == information.from).lastMessage))
+            {
+                UpdatePatrolStatus(new PatrolStatus(information.from, information.type == IAInformation.InformationType.SEARCHZONE || information.type == IAInformation.InformationType.ZONECLEAR ? information.parameters : "", information.timeReceived));
+            }
+        }
+
+    }
+
+    void UpdatePatrolStatus(PatrolStatus pat)
+    {
+        patrolStatus.RemoveAll(c => c.unitID == pat.unitID);
+        patrolStatus.Add(pat);
+    }
+
+    string closestUnit;
+    float minimumDistance;
+    float distanceCache;
+    public string GetClosestUnitName(Zone zoneToSearch)
+    {
+        closestUnit = "";
+        minimumDistance = Mathf.Infinity;
+        foreach (PatrolStatus pat in patrolStatus)
+        {
+            distanceCache = Vector3.Distance(ZoneManager.instance.allZones.Find(c => c.zoneName == pat.currentZone).transform.position, zoneToSearch.transform.position);
+            if (distanceCache < minimumDistance)
+            {
+                minimumDistance = distanceCache;
+                closestUnit = pat.unitID;
+            }
+        }
+        return closestUnit;
+    }
+
+    public void ConfirmDisappearedUnit(float timeAsk)
+    {
+        List<IAInformation> orderStatus = hardMemory.FindAll(c => c.toDo && c.type == IAInformation.InformationType.ASKSTATUS);
+        if (orderStatus != null && orderStatus.Count > 0)
+        {
+            if (orderStatus[0].timeCreation > 15f)
+            {
+                hardMemory.RemoveAll(c => c.toDo);
+                if (orderStatus.Count == patrolStatus.Count)
+                {
+                    //Prudence !
+                    behavior = IABehaviour.PATROL;
+                }
+                else
+                {
+                    PatrolStatus lostPat = patrolStatus.Find(c => c.unitID == orderStatus[Random.Range(0, orderStatus.Count)].parameters);
+                    TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, "all" + "$" + lostPat.currentZone, true);
+                }
+
+            }
+        }
+        else if (patrolStatus.Exists(c => c.lastMessage < timeAsk) && (Time.time - timeAsk > lostUnitTimeout))
+        {
+            foreach (PatrolStatus pat in patrolStatus)
+            {
+                if (pat.lastMessage < timeAsk)
+                {
+                    TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 0.5f, pat.unitID, true);
+                    RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.ASKSTATUS, 0f, "", true));
+                }
+            }
+        }
     }
     #endregion
 }

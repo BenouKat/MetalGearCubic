@@ -37,7 +37,7 @@ public class ListenRadioManager : MonoBehaviour {
             case IAInformation.InformationType.REPLACEZONE:
                 dialogText.text = "- \"Hey. I'm close to the " + info.parameters + ". I will check for you.\"";
                 break;
-            case IAInformation.InformationType.DEVIATEZONE:
+            case IAInformation.InformationType.DEVIATETOZONE:
                 dialogText.text = "- \"Negative, there's no need to check the " + info.parameters.Split('$')[0] 
                     + ". Check the " + info.parameters.Split('$')[1] + " instead.\"";
                 break;

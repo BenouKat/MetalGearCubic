@@ -25,6 +25,7 @@ public class IALegs : MonoBehaviour {
 
     private void Start()
     {
+        pathFromDistance = new NavMeshPath();
         if (brain == null) brain = GetComponent<IABrain>();
         rotationHelper = (InstanceManager.instance.CreateEmptyObject(InstanceManager.InstanceType.Utils, "RotationHelper")).transform;
         rotationHelper.transform.rotation = transform.rotation;
@@ -37,30 +38,16 @@ public class IALegs : MonoBehaviour {
 
     public void SetDestinationToClosest(List<Transform> targets, Speed speed, bool stopIfCanBeSeen = false, float stopDistance = 0f)
     {
-        NavMeshPath path = new NavMeshPath();
         Transform selectedTarget = null;
         float distanceMin = Mathf.Infinity;
         float currentDistance = 0f;
         foreach(Transform target in targets)
         {
-            agent.CalculatePath(target.position, path);
-            currentDistance = 0f;
-            if(path.corners.Length < 2)
+            currentDistance = GetDistanceFrom(target);
+            if (currentDistance < distanceMin)
             {
-                currentDistance = 0f;
-            }
-            else
-            {
-                for (int i = 0; i < path.corners.Length - 1; i++)
-                {
-                    currentDistance += (path.corners[i] - path.corners[i + 1]).sqrMagnitude;
-                }
-
-                if(currentDistance < distanceMin)
-                {
-                    selectedTarget = target;
-                    distanceMin = currentDistance;
-                }
+                selectedTarget = target;
+                distanceMin = currentDistance;
             }
         }
         
@@ -71,6 +58,27 @@ public class IALegs : MonoBehaviour {
         else
         {
             Debug.LogWarning("Path hasn't found a selected target... No destination has been set");
+        }
+    }
+
+    NavMeshPath pathFromDistance;
+    float distanceFrom = 0f;
+    public float GetDistanceFrom(Transform target)
+    {
+        agent.CalculatePath(target.position, pathFromDistance);
+        distanceFrom = 0f;
+        if (pathFromDistance.corners.Length < 2)
+        {
+            return 0f;
+        }
+        else
+        {
+            for (int i = 0; i < pathFromDistance.corners.Length - 1; i++)
+            {
+                distanceFrom += (pathFromDistance.corners[i] - pathFromDistance.corners[i + 1]).sqrMagnitude;
+            }
+
+            return distanceFrom;
         }
     }
 
