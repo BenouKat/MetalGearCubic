@@ -45,9 +45,6 @@ public class IAEyes : MonoBehaviour {
     public int checkersPerFrame;
 
     List<Collider> inFieldOfView;
-    int intruderLayer;
-    //int friendLayer;
-    int wallLayer;
 
     Transform enemyFocused;
     float currentVisualAcuity;
@@ -60,9 +57,6 @@ public class IAEyes : MonoBehaviour {
         sphere.radius = viewDistance / brain.transform.localScale.x;
         gameObject.layer = LayerMask.NameToLayer("Detection");
         inFieldOfView = new List<Collider>();
-        intruderLayer = LayerMask.NameToLayer("Player");
-        //friendLayer = LayerMask.NameToLayer("Enemy");
-        wallLayer = LayerMask.NameToLayer("Unmovable");
     }
 
     private void OnTriggerEnter(Collider col)
@@ -93,7 +87,7 @@ public class IAEyes : MonoBehaviour {
     {
         foreach (Collider col in inFieldOfView)
         {
-            if (IsOnViewSight(col.transform, intruderLayer))
+            if (IsOnViewSight(col.transform, UnitManager.instance.intruderLayer))
             {
                 ProcessVisualAcuity(col.transform);
                 if(currentVisualAcuity > 0f)
@@ -106,7 +100,7 @@ public class IAEyes : MonoBehaviour {
 
     public void KeepEnemy()
     {
-        if (!IsOnViewSight(enemyFocused, intruderLayer))
+        if (!IsOnViewSight(enemyFocused, UnitManager.instance.intruderLayer))
         {
             currentVisualAcuity = 0f;
             enemyFocused = null;
@@ -157,10 +151,10 @@ public class IAEyes : MonoBehaviour {
     bool raycastTest;
     public bool CanBeSeen(Transform target, float distance, int layerTarget)
     {
-        layerRaycast = 1 << layerTarget | 1 << wallLayer;
+        layerRaycast = 1 << layerTarget | 1 << UnitManager.instance.wallLayer;
         if (layerTarget <= 0)
         {
-            layerRaycast = 1 << wallLayer;
+            layerRaycast = 1 << UnitManager.instance.wallLayer;
             distanceToTarget = Vector3.Distance(target.position, transform.position);
             if (distance > distanceToTarget)
             {
@@ -208,7 +202,7 @@ public class IAEyes : MonoBehaviour {
 
             if (Vector3.Angle(transform.forward, selectedChecker.position - transform.position) <= fieldOfView/2f)
             {
-                if (Physics.Raycast(transform.position, selectedChecker.position - transform.position, out info, spotDistance, 1 << wallLayer))
+                if (Physics.Raycast(transform.position, selectedChecker.position - transform.position, out info, spotDistance, 1 << UnitManager.instance.wallLayer))
                 {
                     if (info.collider.CompareTag("Floor"))
                     {

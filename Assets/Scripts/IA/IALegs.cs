@@ -86,6 +86,7 @@ public class IALegs : MonoBehaviour {
     {
         currentTarget = null;
         agent.isStopped = true;
+        hasReachedDestination = true;
     }
 
     public void SetDestination(Transform target, Speed speed, bool stopIfCanBeSeen = false, float seenDistance = 0f, float stopDistance = 0f)

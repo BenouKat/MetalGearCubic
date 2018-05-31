@@ -8,10 +8,12 @@ public class IAEars : MonoBehaviour {
     public IARadio radio;
     bool listenMessage;
     bool isReceivingMessage;
-    public bool IsFocus = true;
+    public bool IsFocusOnConversation = false;
 
     public Vector2 delayStopListening;
     float lastListening;
+
+    public enum NoiseType { INTERPEL, FRIENDLY, BYE, AGRESSIVE, WEIRD }
 
     private void Start()
     {
@@ -25,10 +27,26 @@ public class IAEars : MonoBehaviour {
         radio.OnMessageReceptionEnd -= OnMessageReceptionEnd;
     }
 
-    public void HeardNoise()
+    public void Heard(Transform source, NoiseType type)
     {
-        //Heard strange noise
-        //Lose focus on the message
+        switch(type)
+        {
+            case NoiseType.INTERPEL:
+                brain.SetCheck(source);
+                break;
+            case NoiseType.AGRESSIVE:
+            case NoiseType.WEIRD:
+                brain.mouth.SayToRadio(null);
+                brain.TellInformationToOthers(IAInformation.InformationType.CHECKING, 2f, type.ToString());
+                brain.SetCheck(source);
+                break;
+            case NoiseType.BYE:
+                if(brain.currentState == IABrain.IAState.TALKING)
+                {
+                    brain.StopTalking();
+                }
+                break;
+        }
     }
 
     void OnMessageReceptionBegin(IAInformation information)

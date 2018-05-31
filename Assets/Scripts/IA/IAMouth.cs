@@ -12,7 +12,31 @@ public class IAMouth : MonoBehaviour {
     float lastTalk = -10f;
     float lastLength = 0;
 
-    public void Say(List<IAInformation> informations)
+    [Range(1f, 10f)]
+    public float voiceRange = 3f;
+    Collider[] speakingTo = new Collider[10];
+
+    
+
+    public void SpeakOut(IAEars.NoiseType type)
+    {
+        int resultCount = Physics.OverlapSphereNonAlloc(transform.position, voiceRange, speakingTo, 1 << UnitManager.instance.friendLayer | 1 << UnitManager.instance.intruderLayer);
+        IABrain enemyBrainCatch;
+
+        for (int i=0; i<resultCount; i++)
+        {
+            if(speakingTo[i].transform.position != transform.position)
+            {
+                enemyBrainCatch = speakingTo[i].GetComponent<IABrain>();
+                if(enemyBrainCatch != null)
+                {
+                    enemyBrainCatch.ears.Heard(brain.transform, type);
+                }
+            }
+        }
+    }
+
+    public void SayToRadio(List<IAInformation> informations)
     {
         if(informations != null)
         {

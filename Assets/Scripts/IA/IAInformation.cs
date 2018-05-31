@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class IAInformation {
     
-    public enum InformationType { ZONECLEAR, SEARCHZONE, REPLACEZONE, ALREADYZONE, DEVIATETOZONE, BRINGTOOFFICER, MEETOFFICER, ASKSTATUS, TELLSTATUS, OK, NOK }
+    public enum InformationType { ZONECLEAR, SEARCHZONE, REPLACEZONE, ALREADYZONE, DEVIATETOZONE, BRINGTOOFFICER, MEETOFFICER, CHECKING, CHECKINGOVER, ASKSTATUS, TELLSTATUS, OK, NOK }
     public readonly System.Guid id;
     public InformationType type;
     public string from;

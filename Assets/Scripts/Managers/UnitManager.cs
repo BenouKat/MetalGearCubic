@@ -13,10 +13,29 @@ public class UnitManager : MonoBehaviour {
             instance = this;
         }
         charArray = "AZERTYUIOPQSDFGHJKLMWXCVBN".ToCharArray();
+
+        intruderLayer = LayerMask.NameToLayer("Player");
+        friendLayer = LayerMask.NameToLayer("Enemy");
+        wallLayer = LayerMask.NameToLayer("Unmovable");
     }
-    
+
+    Transform currentOfficer;
     List<string> unitIDs;
     char[] charArray;
+
+    public int intruderLayer;
+    public int friendLayer;
+    public int wallLayer;
+
+    public void SetOfficer(Transform officer)
+    {
+        currentOfficer = officer;
+    }
+
+    public Transform GetCurrentOfficer()
+    {
+        return currentOfficer;
+    }
 
     public List<string> GetAllUnits()
     {
