@@ -675,7 +675,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1894174429676648}
   m_LocalRotation: {x: -0, y: -0.7200086, z: -0, w: 0.69396514}
-  m_LocalPosition: {x: 4.8022895, y: 0.058557153, z: -6.2061043}
+  m_LocalPosition: {x: -12.1, y: 0.058557153, z: 0.2}
   m_LocalScale: {x: 0.7000001, y: 0.7, z: 0.7000001}
   m_Children:
   - {fileID: 4533629957391816}
@@ -1951,7 +1951,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brain: {fileID: 114920914728471186}
   radio: {fileID: 114290058675121012}
-  IsFocus: 1
+  IsFocusOnConversation: 0
   delayStopListening: {x: 0.25, y: 0.5}
 --- !u!114 &114460198225566926
 MonoBehaviour:
@@ -2033,6 +2033,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brain: {fileID: 114920914728471186}
   radio: {fileID: 114290058675121012}
+  voiceRange: 3
 --- !u!114 &114867068217679614
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2074,6 +2075,8 @@ MonoBehaviour:
   ears: {fileID: 114345878504926098}
   legs: {fileID: 114867068217679614}
   arms: {fileID: 114974075441090114}
+  unitID: 
+  defaultZone: {fileID: 0}
   minZoneToVisit: 3
   checkersDivisions:
   - maxAngle: 60
@@ -2136,10 +2139,17 @@ MonoBehaviour:
     internalStateUpdateTime: 2
   - state: 0
     internalStateUpdateTime: 1
-  - state: 3
+  - state: 4
     internalStateUpdateTime: 0.2
-  friendly: 25
-  orientation: 60
+  - state: 1
+    internalStateUpdateTime: 2
+  - state: 3
+    internalStateUpdateTime: 1
+  confirmationOrderTimeout: 20
+  lostUnitTimeout: 30
+  friendly: 45
+  orientation: 30
+  talkative: 0
 --- !u!114 &114974075441090114
 MonoBehaviour:
   m_ObjectHideFlags: 1

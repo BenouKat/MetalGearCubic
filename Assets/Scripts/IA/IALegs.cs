@@ -16,6 +16,7 @@ public class IALegs : MonoBehaviour {
     public bool stopIfCanBeSeen;
     bool hasSetDestination;
     bool hasReachedDestination;
+    bool lookAtTarget;
     [Range(0f, 1f)]
     public float speedRotation;
     float seenDistance;
@@ -87,6 +88,7 @@ public class IALegs : MonoBehaviour {
         currentTarget = null;
         agent.isStopped = true;
         hasReachedDestination = true;
+        lookAtTarget = false;
     }
 
     public void SetDestination(Transform target, Speed speed, bool stopIfCanBeSeen = false, float seenDistance = 0f, float stopDistance = 0f)
@@ -100,6 +102,13 @@ public class IALegs : MonoBehaviour {
         agent.speed = GetSpeedValue(speed);
         hasSetDestination = false;
         hasReachedDestination = false;
+        lookAtTarget = false;
+    }
+
+    public void LookAtTarget(Transform target)
+    {
+        lookAtTarget = true;
+        currentTarget = target;
     }
     
     public float GetSpeedValue(Speed speed)
@@ -113,21 +122,21 @@ public class IALegs : MonoBehaviour {
         {
             RotationUpdate();
 
-            PositionUpdate();
+            if(!lookAtTarget) PositionUpdate();
         }
     }
 
     Vector3 lookAtPosition;
     void RotationUpdate()
     {
-        if (brain.eyes.HasTargetOnSight())
+        if (brain.eyes.HasTargetOnSight() || lookAtTarget)
         {
             if(agent.updateRotation)
             {
                 agent.updateRotation = false;
-                rotationHelper.position = transform.position;
-                rotationHelper.LookAt(brain.eyes.GetEyesTarget());
             }
+            rotationHelper.position = transform.position;
+            rotationHelper.LookAt(lookAtTarget ? currentTarget : brain.eyes.GetEyesTarget());
         }
         else if(agent.isStopped && stopIfCanBeSeen && hasReachedDestination)
         {

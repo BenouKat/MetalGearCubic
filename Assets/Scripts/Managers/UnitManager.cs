@@ -20,11 +20,14 @@ public class UnitManager : MonoBehaviour {
     }
 
     Transform currentOfficer;
-    List<string> unitIDs;
+    List<string> unitIDs = new List<string>();
     char[] charArray;
 
+    [HideInInspector]
     public int intruderLayer;
+    [HideInInspector]
     public int friendLayer;
+    [HideInInspector]
     public int wallLayer;
 
     public void SetOfficer(Transform officer)

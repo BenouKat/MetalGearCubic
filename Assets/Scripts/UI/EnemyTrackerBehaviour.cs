@@ -45,7 +45,7 @@ public class EnemyTrackerBehaviour : TrackerBehaviour {
             ChangeStateColor();
         }
 
-        isTalking = brain.mouth.IsTalking();
+        isTalking = brain.mouth.IsTalkingToRadio();
 
         if (isTalking && !particleListening.isEmitting)
         {

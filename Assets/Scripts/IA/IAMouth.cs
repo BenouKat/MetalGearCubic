@@ -43,7 +43,7 @@ public class IAMouth : MonoBehaviour {
             informationCache = informations;
             StartCoroutine(SpeechRoutine());
         }
-        else if(IsTalking())
+        else if(IsTalkingToRadio())
         {
             radio.StopTalk();
         }
@@ -71,13 +71,13 @@ public class IAMouth : MonoBehaviour {
         informationCache.RemoveAt(0);
     }
 
-    public bool IsTalking()
+    public bool IsTalkingToRadio()
     {
         return informationCache != null || Time.time < lastTalk + lastLength;
     }
 
     public float GetTalkingCompletion()
     {
-        return IsTalking() ? ((Time.time - lastTalk) / lastLength) : 1f;
+        return IsTalkingToRadio() ? ((Time.time - lastTalk) / lastLength) : 1f;
     }
 }

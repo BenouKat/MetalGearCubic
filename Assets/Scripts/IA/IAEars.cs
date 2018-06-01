@@ -81,7 +81,7 @@ public class IAEars : MonoBehaviour {
         }
     }
 
-    public bool IsListening()
+    public bool IsListeningRadio()
     {
         return listenMessage;
     }

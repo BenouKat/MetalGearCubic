@@ -45,14 +45,14 @@ public class IABrain : MonoBehaviour {
 
         Handles.color = new Color(1f, 1f, 0f, 0.5f);
         Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
-        if (mouth.IsTalking())
+        if (mouth.IsTalkingToRadio())
         {
             Handles.DrawSolidArc(transform.position + (Vector3.up*0.5f), Vector3.up, Vector3.right, mouth.GetTalkingCompletion()*360f, 2f);
         }
 
         Handles.color = new Color(0f, 1f, 1f, 0.75f);
         Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
-        if (ears.IsListening())
+        if (ears.IsListeningRadio())
         {
             Handles.DrawSolidArc(transform.position + Vector3.up, Vector3.up, Vector3.right, ears.GetListeningCompletion() * 360f, 1f);
         }
@@ -187,7 +187,9 @@ public class IABrain : MonoBehaviour {
     [Header("Officer info")]
     public float confirmationOrderTimeout = 20f;
     public float lostUnitTimeout = 30f;
-    List<PatrolStatus> patrolStatus;
+    List<PatrolStatus> patrolStatus = new List<PatrolStatus>();
+    IAInformation attendingInfo = null;
+    float timeAttending;
 
     [Header("Personality")]
     [Range(0f, 100f)]
@@ -234,7 +236,7 @@ public class IABrain : MonoBehaviour {
         //Information constant
         if (!HasNothingToSay())
         {
-            if (!ears.IsListening() && !mouth.IsTalking())
+            if (!ears.IsListeningRadio() && !mouth.IsTalkingToRadio())
             {
                 mouth.SayToRadio(informationToCommunicate);
                 informationToCommunicate.Clear();
@@ -300,7 +302,7 @@ public class IABrain : MonoBehaviour {
     #region State
     void IdleStatePatrolUpdate()
     {
-        if(isTimeToMakeDecision(IAState.IDLE) && HasNothingToSay() && !mouth.IsTalking())
+        if(isTimeToMakeDecision(IAState.IDLE) && HasNothingToSay() && !mouth.IsTalkingToRadio())
         {
             IAInformation order = AccessSoftMemory().Find(c => c.toDo);
             if(order != null && order.type == IAInformation.InformationType.MEETOFFICER)
@@ -322,7 +324,10 @@ public class IABrain : MonoBehaviour {
             {
                 if (order != null) AccessSoftMemory().Remove(order);
                 SetZoneTarget(GetClosestZoneWithErrorRate(GetValidZoneToSearch(), 100f - orientation));
-                TellInformationToOthers(IAInformation.InformationType.SEARCHZONE, 2f, zoneTarget.zoneName);
+                if(Random.Range(0f, 100f) < talkative)
+                {
+                    TellInformationToOthers(IAInformation.InformationType.SEARCHZONE, 2f, zoneTarget.zoneName);
+                }
                 legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
                 currentState = IAState.WORKING;
             }
@@ -333,31 +338,45 @@ public class IABrain : MonoBehaviour {
 
     void IdleStateOfficerUpdate()
     {
-        if (isTimeToMakeDecision(IAState.IDLE) && HasNothingToSay() && !mouth.IsTalking() && !ears.IsListening())
+        if (isTimeToMakeDecision(IAState.IDLE) && HasNothingToSay() && !mouth.IsTalkingToRadio() && !ears.IsListeningRadio())
         {
-            IAInformation order = hardMemory.Find(c => c.toDo && (c.type == IAInformation.InformationType.DEVIATETOZONE || c.type == IAInformation.InformationType.BRINGTOOFFICER));
-            if (order != null && patrolStatus.Count > 0)
+            IAInformation order = hardMemory.Find(c => c.toDo && (c.type == IAInformation.InformationType.DEVIATETOZONE 
+                                                                || c.type == IAInformation.InformationType.BRINGTOOFFICER
+                                                                || c.type == IAInformation.InformationType.MEETOFFICER));
+            if (order != null)
             {
                 UpdatePatrolStatus();
-                if (!patrolStatus.Exists(c => c.lastMessage < order.timeCreation))
+                if (patrolStatus.Count > 0)
                 {
-                    hardMemory.RemoveAll(c => c.toDo);
-                    if(order.type == IAInformation.InformationType.DEVIATETOZONE)
+                    if (!patrolStatus.Exists(c => c.lastMessage < order.timeCreation))
                     {
-                        Zone zoneToSearch = GetValidZoneToSearch().FindLast(c => true);
-                        TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, GetClosestUnitName(zoneToSearch) + "$" + zoneToSearch, true);
-                        currentState = IAState.WORKING;
+                        hardMemory.RemoveAll(c => c.toDo);
+                        if (order.type == IAInformation.InformationType.DEVIATETOZONE)
+                        {
+                            Zone zoneToSearch = GetValidZoneToSearch().FindLast(c => true);
+                            TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, GetClosestUnitName(zoneToSearch) + "$" + zoneToSearch, true);
+                            currentState = IAState.WORKING;
+                        }
+                        else if(order.type == IAInformation.InformationType.BRINGTOOFFICER)
+                        {
+                            Zone zoneToTake = ZoneManager.instance.allZones.Find(c => c.zoneEntries.Count == 1 && c != defaultZone);
+                            TellInformationToOthers(IAInformation.InformationType.BRINGTOOFFICER, 4f, GetClosestUnitName(zoneToTake) + "$" + zoneToTake.zoneName + "$" + Random.Range(0, 2).ToString(), true);
+                            currentState = IAState.WORKING;
+                            attendingInfo = informationToCommunicate.FindLast(c => true);
+                            timeAttending = Time.time;
+                        }
+                        else
+                        {
+                            TellInformationToOthers(IAInformation.InformationType.MEETOFFICER, 4f, order.parameters, true);
+                            currentState = IAState.WORKING;
+                            attendingInfo = informationToCommunicate.FindLast(c => true);
+                            timeAttending = Time.time;
+                        }
                     }
                     else
                     {
-                        Zone zoneToTake = ZoneManager.instance.allZones.Find(c => c.zoneEntries.Count == 1 && c != defaultZone);
-                        TellInformationToOthers(IAInformation.InformationType.BRINGTOOFFICER, 4f, GetClosestUnitName(zoneToTake) + "$" + zoneToTake.zoneName + "$" + Random.Range(0, 2).ToString(), true);
-                        currentState = IAState.WORKING;
+                        ConfirmDisappearedUnit(order.timeCreation);
                     }
-                }
-                else
-                {
-                    ConfirmDisappearedUnit(order.timeCreation);
                 }
             }
             else
@@ -376,7 +395,19 @@ public class IABrain : MonoBehaviour {
                         ConfirmDisappearedUnit(orderWaitingConfirmation.timeCreation);
                     }
                 }
-                else
+                else if(attendingInfo != null)
+                {
+                    if(Time.time - timeAttending > (attendingInfo.type == IAInformation.InformationType.MEETOFFICER ? 60f : 120f))
+                    {
+                        UpdatePatrolStatus();
+                        TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
+                        RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.MEETOFFICER, 0f, attendingInfo.parameters, true));
+                    }
+                    else
+                    {
+                        currentState = IAState.WORKING;
+                    }
+                }else
                 {
                     float rangeIdle = Random.Range(0f, 100f);
                     if (rangeIdle < 25f)
@@ -385,12 +416,16 @@ public class IABrain : MonoBehaviour {
                         string patrolSelected = allPatrol[Random.Range(0, allPatrol.Count)];
                         TellInformationToOthers(IAInformation.InformationType.MEETOFFICER, 4f, patrolSelected, true);
                         currentState = IAState.WORKING;
+                        attendingInfo = informationToCommunicate.FindLast(c => true);
+                        timeAttending = Time.time;
                     }
                     else if (rangeIdle >= 25f && rangeIdle < 50f)
                     {
                         UpdatePatrolStatus();
                         TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
                         RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.BRINGTOOFFICER, 0f, "", true));
+                        attendingInfo = informationToCommunicate.FindLast(c => true);
+                        timeAttending = Time.time;
                     }
                     else if (rangeIdle >= 50f && rangeIdle < 75f)
                     {
@@ -450,10 +485,10 @@ public class IABrain : MonoBehaviour {
         }
         else if (isTimeToMakeDecision(IAState.WORKING))
         {
-            if(Random.Range(0f, 100f) < 5f)
+            if(Random.Range(0f, 100f) < 30f)
             {
                 currentState = IAState.IDLE;
-            }else if (Random.Range(0f, 100f) < 25f)
+            }else if (Random.Range(0f, 100f) < 50f)
             {
                 legs.SetDestination(defaultZone.zoneChecker[Random.Range(0, defaultZone.zoneChecker.Count)], IALegs.Speed.WALK);
             }
@@ -465,6 +500,7 @@ public class IABrain : MonoBehaviour {
     Collider[] meetingColliders;
     void TalkingStateUpdate()
     {
+        if (!isTimeToMakeDecision(IAState.TALKING)) return;
         if(meetingTarget != null)
         {
             if(meetingTarget.IsInsideZone(transform.position))
@@ -474,6 +510,7 @@ public class IABrain : MonoBehaviour {
                 if(talkingTarget == null)
                 {
                     //Not here ?
+                    //Prudence !
                 }
 
             }else if(legs.IsDestinationReached())
@@ -483,6 +520,11 @@ public class IABrain : MonoBehaviour {
         }
         else if(talkingTarget != null)
         {
+            if (Vector3.Distance(talkingTarget.position, transform.position) > 1.5f && legs.IsDestinationReached())
+            {
+                legs.SetDestination(talkingTarget, IALegs.Speed.WALK, false, 0f, 1f);
+            }
+
             if (Vector3.Distance(talkingTarget.position, transform.position) < mouth.voiceRange &&
                 eyes.CanBeSeen(talkingTarget, mouth.voiceRange, UnitManager.instance.friendLayer)
                 && Vector3.Dot(talkingTarget.forward, transform.forward) > -0.9f)
@@ -490,8 +532,6 @@ public class IABrain : MonoBehaviour {
                 mouth.SpeakOut(IAEars.NoiseType.INTERPEL);
             }else if(legs.IsDestinationReached())
             {
-                mouth.SpeakOut(IAEars.NoiseType.INTERPEL);
-
                 if (Random.Range((int)(5*talkative/100f) - talkingCount, 5 + (int)(30 * talkative / 100f) - talkingCount) < 0)
                 {
                     mouth.SpeakOut(IAEars.NoiseType.BYE);
@@ -508,18 +548,55 @@ public class IABrain : MonoBehaviour {
         HaveMadeDecision();
     }
 
+    IABrain interpelBrain;
+    int checkCount = 0;
+    Vector3 checkTempPosition;
     void CheckingStateUpdate()
     {
-        if(legs.IsDestinationReached())
+        if (!isTimeToMakeDecision(IAState.CHECKING)) return;
+        if (legs.IsDestinationReached())
         {
-            if(Vector3.Dot(transform.position - checkTarget.position, checkTarget.forward) > 0.9f 
-                && checkTarget.GetComponent<IABrain>() != null && checkTarget.GetComponent<IABrain>().currentState == IAState.TALKING)
+            if(Vector3.Dot(transform.position - checkTarget.position, checkTarget.forward) > 0.9f)
             {
-                //C'est quelqu'un qui veut parler
+                interpelBrain = checkTarget.GetComponent<IABrain>();
+                if(interpelBrain != null && interpelBrain.currentState == IAState.TALKING)
+                {
+                    if(Vector3.Distance(checkTarget.position, transform.position) < 2f)
+                    {
+                        talkingTarget = checkTarget;
+                        currentState = IAState.TALKING;
+                    }
+                }
+                else if(!eyes.CanBeSeen(checkTarget, 1f, -1))
+                {
+                    legs.SetDestination(checkTarget, IALegs.Speed.RUN, true, 1f);
+                }
+                else
+                {
+                    if(checkCount < 4)
+                    {
+                        checkTempPosition = transform.position + Random.onUnitSphere;
+                        checkTempPosition.y = transform.position.y;
+                        checkTarget.position = checkTempPosition;
+
+                        legs.LookAtTarget(checkTarget);
+
+                        checkCount++;
+                    }
+                    else
+                    {
+                        TellInformationToOthers(IAInformation.InformationType.CHECKINGOVER, 1f, "");
+                        currentState = IAState.IDLE;
+                    }
+                }
             }
-            //Faire en sorte que si on voit un bavard en direction de soit et à vue, c'est que on va lui parler.
-            //Sinon aller checker l'élément qui a fait du bruit à sa position
+            else
+            {
+                legs.LookAtTarget(checkTarget);
+            }
         }
+
+        HaveMadeDecision();
     }
     #endregion
 
@@ -673,11 +750,10 @@ public class IABrain : MonoBehaviour {
                 }
                 break;
             case IAInformation.InformationType.OK:
-                
-                if (orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
+                if (orderWaitingConfirmation != null && orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
                 break;
             case IAInformation.InformationType.NOK:
-                if (orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
+                if (orderWaitingConfirmation != null && orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
                 break;
         }
     }
@@ -740,7 +816,7 @@ public class IABrain : MonoBehaviour {
         }
         else
         {
-            RegisterMemory(infoToTell);
+            RegisterMemory(infoToTell, true);
         }
     }
 
@@ -928,7 +1004,6 @@ public class IABrain : MonoBehaviour {
                     PatrolStatus lostPat = patrolStatus.Find(c => c.unitID == orderStatus[Random.Range(0, orderStatus.Count)].parameters);
                     TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, "all" + "$" + lostPat.currentZone, true);
                 }
-
             }
         }
         else if (patrolStatus.Exists(c => c.lastMessage < timeAsk) && (Time.time - timeAsk > lostUnitTimeout))
@@ -946,6 +1021,7 @@ public class IABrain : MonoBehaviour {
 
     public void SetCheck(Transform source)
     {
+        checkCount = 0;
         legs.StopDestination();
         currentState = IAState.CHECKING;
         checkTarget = source;
@@ -956,6 +1032,7 @@ public class IABrain : MonoBehaviour {
         currentState = IAState.IDLE;
         talkingCount = 0;
         talkingTarget = null;
+        attendingInfo = null;
     }
     #endregion
 }
