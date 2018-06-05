@@ -59,6 +59,11 @@ public class IAEyes : MonoBehaviour {
         inFieldOfView = new List<Collider>();
     }
 
+    private void Update()
+    {
+        LookToEnemy();
+    }
+
     private void OnTriggerEnter(Collider col)
     {
         inFieldOfView.Add(col);

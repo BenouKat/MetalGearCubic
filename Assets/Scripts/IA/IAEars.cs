@@ -37,7 +37,7 @@ public class IAEars : MonoBehaviour {
             case NoiseType.AGRESSIVE:
             case NoiseType.WEIRD:
                 brain.mouth.SayToRadio(null);
-                brain.TellInformationToOthers(IAInformation.InformationType.CHECKING, 2f, type.ToString());
+                brain.mouth.TellInformationToOthers(IAInformation.InformationType.CHECKING, 2f, type.ToString());
                 brain.SetCheck(source);
                 break;
             case NoiseType.BYE:
@@ -59,8 +59,8 @@ public class IAEars : MonoBehaviour {
     {
         isReceivingMessage = false;
         StartCoroutine(StopListen(Random.Range(delayStopListening.x, delayStopListening.y)));
-        brain.RemoveSameInformationToTell(information);
-        brain.RegisterMemory(information);
+        brain.mouth.RemoveInformation(information);
+        brain.memory.RegisterMemory(information);
     }
 
     float timer;

@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class IAMouth : MonoBehaviour {
 
-    List<IAInformation> informationCache;
+
+    List<IAInformation> informationToCommunicate = new List<IAInformation>();
+    List<IAInformation> informationCommunicating;
     public IABrain brain;
 
     public IARadio radio;
@@ -16,7 +18,61 @@ public class IAMouth : MonoBehaviour {
     public float voiceRange = 3f;
     Collider[] speakingTo = new Collider[10];
 
-    
+    private void Update()
+    {
+        //Information constant
+        if (!HasNothingToSay())
+        {
+            if (!brain.ears.IsListeningRadio() && !IsTalkingToRadio())
+            {
+                SayToRadio(informationToCommunicate);
+                informationToCommunicate.Clear();
+                brain.HaveMadeDecision();
+            }
+        }
+    }
+
+    IAInformation infoToTell;
+    public void TellInformationToOthers(IAInformation.InformationType type, float length, string parameters, bool order = false)
+    {
+        infoToTell = new IAInformation(brain.unitID, type, length, parameters, order);
+        informationToCommunicate.Add(infoToTell);
+        if (order)
+        {
+            if (infoToTell.NeedConfirmation()) brain.SetOrderConfirmation(infoToTell);
+        }
+        else
+        {
+            brain.memory.RegisterMemory(infoToTell, true);
+        }
+    }
+
+    public bool HasNothingToSay()
+    {
+        return informationToCommunicate.Count == 0;
+    }
+
+    public IAInformation GetLastInfoToCommunicate()
+    {
+        if (informationToCommunicate.Count == 0) return null;
+
+        return informationToCommunicate[informationToCommunicate.Count - 1];
+    }
+
+    public void RemoveInformation(IAInformation info)
+    {
+        informationToCommunicate.RemoveAll(c => c.CompareTo(info));
+    }
+
+    public void RemoveInformation(IAInformation.InformationType type, string parameters = "")
+    {
+        informationToCommunicate.RemoveAll(c => c.type == type && (string.IsNullOrEmpty(parameters) || c.parameters == parameters));
+    }
+
+    public bool ExistInformation(IAInformation.InformationType type, string parameters = "")
+    {
+        return informationToCommunicate.Exists(c => c.type == type && (string.IsNullOrEmpty(parameters) || c.parameters == parameters));
+    }
 
     public void SpeakOut(IAEars.NoiseType type)
     {
@@ -40,7 +96,7 @@ public class IAMouth : MonoBehaviour {
     {
         if(informations != null)
         {
-            informationCache = informations;
+            informationCommunicating = informations;
             StartCoroutine(SpeechRoutine());
         }
         else if(IsTalkingToRadio())
@@ -51,7 +107,7 @@ public class IAMouth : MonoBehaviour {
 
     IEnumerator SpeechRoutine()
     {
-        while(informationCache.Count > 0)
+        while(informationCommunicating.Count > 0)
         {
             SayNextInfo();
 
@@ -60,20 +116,20 @@ public class IAMouth : MonoBehaviour {
                 yield return 0;
             }
         }
-        informationCache = null;
+        informationCommunicating = null;
     }
 
     void SayNextInfo()
     {
         lastTalk = Time.time;
-        lastLength = informationCache[0].length;
-        radio.Talk(informationCache[0]);
-        informationCache.RemoveAt(0);
+        lastLength = informationCommunicating[0].length;
+        radio.Talk(informationCommunicating[0]);
+        informationCommunicating.RemoveAt(0);
     }
 
     public bool IsTalkingToRadio()
     {
-        return informationCache != null || Time.time < lastTalk + lastLength;
+        return informationCommunicating != null || Time.time < lastTalk + lastLength;
     }
 
     public float GetTalkingCompletion()
