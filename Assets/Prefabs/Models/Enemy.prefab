@@ -570,6 +570,7 @@ GameObject:
   - component: {fileID: 114460198225566926}
   - component: {fileID: 114212224226614674}
   - component: {fileID: 114920914728471186}
+  - component: {fileID: 114599621036951282}
   - component: {fileID: 195353575783518658}
   - component: {fileID: 114988239201004262}
   m_Layer: 11
@@ -675,7 +676,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1894174429676648}
   m_LocalRotation: {x: -0, y: -0.7200086, z: -0, w: 0.69396514}
-  m_LocalPosition: {x: -12.1, y: 0.058557153, z: 0.2}
+  m_LocalPosition: {x: 1.1, y: 0.058557153, z: 26.5}
   m_LocalScale: {x: 0.7000001, y: 0.7, z: 0.7000001}
   m_Children:
   - {fileID: 4533629957391816}
@@ -2020,6 +2021,60 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   checkersPerFrame: 3
+--- !u!114 &114599621036951282
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1894174429676648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 279e34d67fb0dda49aa521cdbd58cd5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxMemory: 50
+  memoryPerformance:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 30
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 120
+      value: 0.33
+      inSlope: -0.005138746
+      outSlope: -0.005138746
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11720886
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 300
+      value: 0
+      inSlope: -0.0004295431
+      outSlope: -0.0004295431
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.15752055
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &114659412972446514
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2067,16 +2122,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec7c19ecf9018d348a11d4500d800baf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isActiveState: 0
-  currentState: 2
-  behavior: 0
   eyes: {fileID: 114470589311681146}
   mouth: {fileID: 114659412972446514}
   ears: {fileID: 114345878504926098}
   legs: {fileID: 114867068217679614}
   arms: {fileID: 114974075441090114}
+  memory: {fileID: 114599621036951282}
   unitID: 
+  stateUpdates:
+  - state: 2
+    internalStateUpdateTime: 1
+  - state: 0
+    internalStateUpdateTime: 3
+  - state: 1
+    internalStateUpdateTime: 2
+  - state: 3
+    internalStateUpdateTime: 2
+  - state: 4
+    internalStateUpdateTime: 0.2
+  behavior: 0
+  informationToListen: 000000000100000002000000030000000400000005000000060000000700000008000000090000000b0000000c000000
+  zoneTarget: {fileID: 0}
   defaultZone: {fileID: 0}
+  meetingTarget: {fileID: 0}
+  talkingTarget: {fileID: 0}
+  checkTarget: {fileID: 0}
   minZoneToVisit: 3
   checkersDivisions:
   - maxAngle: 60
@@ -2091,65 +2161,10 @@ MonoBehaviour:
     chance: 95
     maxDistance: 0
     selectedChecker: {fileID: 0}
-  maxMemory: 50
-  memoryPerformance:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 45
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 150.4806
-      value: 0.30156648
-      inSlope: -0.0030556358
-      outSlope: -0.0030556358
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.080386855
-    - serializedVersion: 3
-      time: 300
-      value: 0.1
-      inSlope: -0.00038502814
-      outSlope: -0.00038502814
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.16720238
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  decisionTime:
-  - state: 2
-    internalStateUpdateTime: 2
-  - state: 0
-    internalStateUpdateTime: 1
-  - state: 4
-    internalStateUpdateTime: 0.2
-  - state: 1
-    internalStateUpdateTime: 2
-  - state: 3
-    internalStateUpdateTime: 1
   confirmationOrderTimeout: 20
-  lostUnitTimeout: 30
   friendly: 45
   orientation: 30
-  talkative: 0
+  talkative: 50
 --- !u!114 &114974075441090114
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -48,6 +48,7 @@ public class IAEyes : MonoBehaviour {
 
     Transform enemyFocused;
     float currentVisualAcuity;
+    float visualReaction;
 
     private void Start()
     {
@@ -57,6 +58,7 @@ public class IAEyes : MonoBehaviour {
         sphere.radius = viewDistance / brain.transform.localScale.x;
         gameObject.layer = LayerMask.NameToLayer("Detection");
         inFieldOfView = new List<Collider>();
+        visualReaction = brain.GetUpdateTime(IAState.IAStateTag.SPOT);
     }
 
     private void Update()
@@ -123,7 +125,7 @@ public class IAEyes : MonoBehaviour {
         {
             if (currentVisualAcuity < 1f)
             {
-                currentVisualAcuity += (Time.deltaTime * visualAcuityByDistance.Evaluate(distanceFromSpotRatio)) / brain.GetInternalStateDecision(IABrain.IAState.SPOT);
+                currentVisualAcuity += (Time.deltaTime * visualAcuityByDistance.Evaluate(distanceFromSpotRatio)) / visualReaction;
             }
             else
             {

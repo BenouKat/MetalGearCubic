@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class EnemyTrackerBehaviour : TrackerBehaviour {
 
     IABrain brain;
-    IABrain.IAState previousState;
+    IAState.IAStateTag previousState;
     public Image filledImage;
     public RectTransform imageTransform;
     public ParticleSystem particleListening;
@@ -14,7 +14,7 @@ public class EnemyTrackerBehaviour : TrackerBehaviour {
     [System.Serializable]
     internal class StateColor
     {
-        public IABrain.IAState state = IABrain.IAState.IDLE;
+        public IAState.IAStateTag state = IAState.IAStateTag.IDLE;
         public Color color = Color.white;
     }
     [SerializeField]
@@ -40,7 +40,7 @@ public class EnemyTrackerBehaviour : TrackerBehaviour {
             imageTransform.localEulerAngles = eulerAngles;
         }
 
-        if(previousState != brain.currentState)
+        if(previousState != brain.currentState.tag)
         {
             ChangeStateColor();
         }
@@ -58,7 +58,7 @@ public class EnemyTrackerBehaviour : TrackerBehaviour {
 
     void ChangeStateColor()
     {
-        filledImage.color = (stateColors.Find(c => c.state == brain.currentState) ?? stateColors.Find(c => c.state == IABrain.IAState.IDLE)).color;
-        previousState = brain.currentState;
+        filledImage.color = (stateColors.Find(c => c.state == brain.currentState.tag) ?? stateColors.Find(c => c.state == IAState.IAStateTag.IDLE)).color;
+        previousState = brain.currentState.tag;
     }
 }

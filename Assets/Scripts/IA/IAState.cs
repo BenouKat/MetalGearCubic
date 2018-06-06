@@ -19,22 +19,27 @@ public abstract class IAState {
         this.updateTime = updateTime;
     }
 
-    public void OnEnable()
+    public void OnEnable(IAStateTag previousState)
     {
-        OnEnableState();
+        OnEnableState(previousState);
     }
-
+    
     public void StateUpdate()
     {
         ConstantStateUpdate();
         if (Time.time - lastUpdate > updateTime)
         {
             PeriodicStateUpdate();
-            lastUpdate = Time.time;
+            ResetUpdateTime();
         }
     }
 
-    protected abstract void OnEnableState();
+    public void ResetUpdateTime()
+    {
+        lastUpdate = Time.time;
+    }
+    
+    protected virtual void OnEnableState(IAStateTag previousState) { }
     protected virtual void ConstantStateUpdate() { }
     protected abstract void PeriodicStateUpdate();
 
@@ -44,6 +49,14 @@ public abstract class IAState {
         {
             case IAStateTag.IDLE:
                 return new IAStateIdle(brain, updateTime);
+            case IAStateTag.WORKING:
+                return new IAStateWorking(brain, updateTime);
+            case IAStateTag.TALKING:
+                return new IAStateTalking(brain, updateTime);
+            case IAStateTag.CHECKING:
+                return new IAStateChecking(brain, updateTime);
+            case IAStateTag.SPOT:
+                return new IAStateSpot(brain, updateTime);
         }
         return null;
     }

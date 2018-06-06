@@ -41,7 +41,7 @@ public class IAEars : MonoBehaviour {
                 brain.SetCheck(source);
                 break;
             case NoiseType.BYE:
-                if(brain.currentState == IABrain.IAState.TALKING)
+                if(brain.currentState.tag == IAState.IAStateTag.TALKING)
                 {
                     brain.StopTalking();
                 }

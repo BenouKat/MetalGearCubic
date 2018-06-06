@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IAStateSpot : MonoBehaviour {
+public class IAStateSpot : IAState
+{
+    public IAStateSpot(IABrain brain, float updateTime) : base(brain, updateTime)
+    {
+        tag = IAStateTag.SPOT;
+        layer = IAStateLayer.ACTIVE;
+    }
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    protected override void PeriodicStateUpdate()
+    {
+        throw new System.NotImplementedException();
+    }
 }

@@ -27,7 +27,7 @@ public class IAMouth : MonoBehaviour {
             {
                 SayToRadio(informationToCommunicate);
                 informationToCommunicate.Clear();
-                brain.HaveMadeDecision();
+                brain.currentState.ResetUpdateTime();
             }
         }
     }

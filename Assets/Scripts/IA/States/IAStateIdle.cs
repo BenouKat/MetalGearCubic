@@ -24,9 +24,12 @@ public class IAStateIdle : IAState
         layer = IAStateLayer.PASSIVE;
     }
 
-    protected override void OnEnableState()
+    protected override void OnEnableState(IAStateTag previousState)
     {
-        attendingInfo = null;
+        if(previousState != IAStateTag.WORKING && previousState != IAStateTag.CHECKING)
+        {
+            attendingInfo = null;
+        }
     }
 
     protected override void PeriodicStateUpdate()
@@ -53,14 +56,14 @@ public class IAStateIdle : IAState
                 brain.meetingTarget = ZoneManager.instance.allZones.Find(c => c.zoneName.Contains("Officer"));
                 brain.talkingTarget = UnitManager.instance.GetCurrentOfficer();
                 brain.legs.SetDestinationToClosest(brain.meetingTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
-                currentState = IAState.TALKING;
+                brain.ChangeState(IAStateTag.TALKING);
             }
             else if (order != null && order.type == IAInformation.InformationType.SEARCHZONE)
             {
                 brain.memory.AccessSoftMemory().Remove(order);
                 brain.SetZoneTarget(ZoneManager.instance.allZones.Find(c => c.zoneName == order.parameters));
                 brain.legs.SetDestinationToClosest(brain.zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
-                currentState = IAState.WORKING;
+                brain.ChangeState(IAStateTag.WORKING);
             }
             else
             {
@@ -71,7 +74,7 @@ public class IAStateIdle : IAState
                     brain.mouth.TellInformationToOthers(IAInformation.InformationType.SEARCHZONE, 2f, brain.zoneTarget.zoneName);
                 }
                 brain.legs.SetDestinationToClosest(brain.zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
-                currentState = IAState.WORKING;
+                brain.ChangeState(IAStateTag.WORKING);
             }
         }
     }
@@ -102,20 +105,20 @@ public class IAStateIdle : IAState
                         {
                             Zone zoneToSearch = brain.GetValidZoneToSearch().FindLast(c => true);
                             brain.mouth.TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, GetClosestUnitName(zoneToSearch) + "$" + zoneToSearch, true);
-                            currentState = IAState.WORKING;
+                            brain.ChangeState(IAStateTag.WORKING);
                         }
                         else if (order.type == IAInformation.InformationType.BRINGTOOFFICER)
                         {
                             Zone zoneToTake = ZoneManager.instance.allZones.Find(c => c.zoneEntries.Count == 1 && c != brain.defaultZone);
                             brain.mouth.TellInformationToOthers(IAInformation.InformationType.BRINGTOOFFICER, 4f, GetClosestUnitName(zoneToTake) + "$" + zoneToTake.zoneName + "$" + Random.Range(0, 2).ToString(), true);
-                            currentState = IAState.WORKING;
+                            brain.ChangeState(IAStateTag.WORKING);
                             attendingInfo = brain.mouth.GetLastInfoToCommunicate();
                             timeAttending = Time.time;
                         }
                         else
                         {
                             brain.mouth.TellInformationToOthers(IAInformation.InformationType.MEETOFFICER, 4f, order.parameters, true);
-                            currentState = IAState.WORKING;
+                            brain.ChangeState(IAStateTag.WORKING);
                             attendingInfo = brain.mouth.GetLastInfoToCommunicate();
                             timeAttending = Time.time;
                         }
@@ -152,7 +155,7 @@ public class IAStateIdle : IAState
                     }
                     else
                     {
-                        currentState = IAState.WORKING;
+                        brain.ChangeState(IAStateTag.WORKING);
                     }
                 }
                 else
@@ -163,8 +166,8 @@ public class IAStateIdle : IAState
                         List<string> allPatrol = UnitManager.instance.GetAllUnits().FindAll(c => c.Contains("PATROL"));
                         string patrolSelected = allPatrol[Random.Range(0, allPatrol.Count)];
                         brain.mouth.TellInformationToOthers(IAInformation.InformationType.MEETOFFICER, 4f, patrolSelected, true);
-                        currentState = IAState.WORKING;
-                        attendingInfo = mouth.GetLastInfoToCommunicate();
+                        brain.ChangeState(IAStateTag.WORKING);
+                        attendingInfo = brain.mouth.GetLastInfoToCommunicate();
                         timeAttending = Time.time;
                     }
                     else if (rangeIdle >= 25f && rangeIdle < 50f)
@@ -179,11 +182,11 @@ public class IAStateIdle : IAState
                     {
                         UpdatePatrolStatus();
                         brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
-                        brain.memory.RegisterMemory(new IAInformation(.brain.unitID, IAInformation.InformationType.DEVIATETOZONE, 0f, "", true));
+                        brain.memory.RegisterMemory(new IAInformation(brain.unitID, IAInformation.InformationType.DEVIATETOZONE, 0f, "", true));
                     }
                     else
                     {
-                        currentState = IAState.WORKING;
+                        brain.ChangeState(IAStateTag.WORKING);
                     }
                 }
             }
@@ -232,6 +235,11 @@ public class IAStateIdle : IAState
             }
         }
 
+    }
+
+    public void UpdatePatrolStatus(string unitID, string zone)
+    {
+        UpdatePatrolStatus(new PatrolStatus(unitID, zone, Time.time));
     }
 
     void UpdatePatrolStatus(PatrolStatus pat)
