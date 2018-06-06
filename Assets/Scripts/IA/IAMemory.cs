@@ -137,7 +137,7 @@ public class IAMemory : MonoBehaviour {
     {
         for(int i=0; i<hardMemory.Count; i++)
         {
-            for(int j=0; j<types.Length; i++)
+            for(int j=0; j<types.Length; j++)
             {
                 if (types[j] == hardMemory[i].type) return hardMemory[i];
             }

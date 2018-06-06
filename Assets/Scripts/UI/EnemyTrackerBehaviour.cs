@@ -24,7 +24,7 @@ public class EnemyTrackerBehaviour : TrackerBehaviour {
     {
         brain = tracker.GetComponent<IABrain>();
         filledImage.fillAmount = 0f;
-        ChangeStateColor();
+        filledImage.color = stateColors.Find(c => c.state == IAState.IAStateTag.IDLE).color;
     }
 
     // Update is called once per frame

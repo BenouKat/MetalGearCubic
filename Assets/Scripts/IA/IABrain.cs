@@ -23,7 +23,7 @@ public class IABrain : MonoBehaviour {
     public void DrawBrainEditor()
     {
         //Handles.DrawSolidRectangleWithOutline(new Rect(brain.transform.position + (Vector3.up * 4f), Vector2.one*5f), Color.black, Color.clear);
-        Handles.Label(transform.position + (Vector3.up * 1.5f), currentState.ToString());
+        Handles.Label(transform.position + (Vector3.up * 1.5f), currentState.tag.ToString());
 
         if (zoneTarget != null)
         {
@@ -156,7 +156,6 @@ public class IABrain : MonoBehaviour {
         }
 
         ChangeState(IAState.IAStateTag.IDLE);
-        
 	}
 	
 	// Update is called once per frame

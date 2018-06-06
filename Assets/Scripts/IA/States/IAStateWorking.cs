@@ -16,7 +16,7 @@ public class IAStateWorking : IAState
 
         switch (brain.behavior)
         {
-            case IABrain.IABehaviour.INTERPATROL:
+            case IABrain.IABehaviour.PATROL:
                 PatrolConstantUpdate();
                 break;
             case IABrain.IABehaviour.OFFICER:
@@ -31,7 +31,7 @@ public class IAStateWorking : IAState
     {
         switch (brain.behavior)
         {
-            case IABrain.IABehaviour.INTERPATROL:
+            case IABrain.IABehaviour.PATROL:
                 PatrolUpdate();
                 break;
             case IABrain.IABehaviour.OFFICER:
