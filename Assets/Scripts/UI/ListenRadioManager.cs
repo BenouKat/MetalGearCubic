@@ -70,6 +70,8 @@ public class ListenRadioManager : MonoBehaviour {
                 break;
 
         }
+
+        Debug.Log(dialogText.text);
     }
 
     List<string> randomItem = new List<string>() { "something to eat", "a book", "some unclassified folders", "an empty USB key", "a security report" };

@@ -22,6 +22,7 @@ public abstract class IAState {
     public void OnEnable(IAStateTag previousState)
     {
         OnEnableState(previousState);
+        TurnReady();
     }
     
     public void StateUpdate()
@@ -37,6 +38,11 @@ public abstract class IAState {
     public void ResetUpdateTime()
     {
         lastUpdate = Time.time;
+    }
+
+    public void TurnReady()
+    {
+        lastUpdate = Time.time - updateTime;
     }
     
     protected virtual void OnEnableState(IAStateTag previousState) { }

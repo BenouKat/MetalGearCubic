@@ -23,6 +23,7 @@ public class IABrain : MonoBehaviour {
     public void DrawBrainEditor()
     {
         //Handles.DrawSolidRectangleWithOutline(new Rect(brain.transform.position + (Vector3.up * 4f), Vector2.one*5f), Color.black, Color.clear);
+        if (currentState == null) return;
         Handles.Label(transform.position + (Vector3.up * 1.5f), currentState.tag.ToString());
 
         if (zoneTarget != null)
@@ -153,6 +154,11 @@ public class IABrain : MonoBehaviour {
         foreach (StateUpdate stateUpdate in stateUpdates)
         {
             availableStates.Add(IAState.CreateNewState(stateUpdate.state, this, stateUpdate.internalStateUpdateTime));
+        }
+
+        if(behavior == IABehaviour.OFFICER)
+        {
+            UnitManager.instance.SetOfficer(transform);
         }
 
         ChangeState(IAState.IAStateTag.IDLE);
@@ -518,8 +524,9 @@ public class IABrain : MonoBehaviour {
 
     public void StopTalking()
     {
-        ChangeState(IAState.IAStateTag.IDLE);
+        legs.StopTurnToTarget();
         talkingTarget = null;
+        ChangeState(IAState.IAStateTag.IDLE);
     }
     #endregion
 }

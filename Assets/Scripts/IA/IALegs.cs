@@ -105,10 +105,16 @@ public class IALegs : MonoBehaviour {
         lookAtTarget = false;
     }
 
-    public void LookAtTarget(Transform target)
+    public void TurnToTarget(Transform target)
     {
         lookAtTarget = true;
         currentTarget = target;
+    }
+
+    public void StopTurnToTarget()
+    {
+        lookAtTarget = false;
+        currentTarget = null;
     }
     
     public float GetSpeedValue(Speed speed)

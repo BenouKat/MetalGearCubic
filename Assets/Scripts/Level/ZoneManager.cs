@@ -126,11 +126,16 @@ public class ZoneManager : MonoBehaviour {
         allEntry = new List<ZoneEntry>();
         allEntry.AddRange(GetComponentsInChildren<ZoneEntry>());
     }
-	
-	
+
+
     //Get the zone for a given position
+
+    float minDistance = 0f;
+    float tempDistance = 0f;
+    Zone closestZone;
     public Zone GetZone(Vector3 position)
     {
+        //Check inside
         foreach(Zone zone in allZones)
         {
             if(zone.IsInsideZone(position))
@@ -138,7 +143,30 @@ public class ZoneManager : MonoBehaviour {
                 return zone;
             }
         }
-        return null;
+
+        //If not found, check zone entry
+        foreach (ZoneEntry zoneEntry in allEntry)
+        {
+            if(Vector3.Distance(zoneEntry.transform.position, position) < 1f)
+            {
+                return zoneEntry.zoneConnected[0];
+            }
+        }
+
+        //If not found, check closest zone
+        minDistance = Mathf.Infinity;
+        closestZone = null;
+        foreach (Zone zone in allZones)
+        {
+            tempDistance = (position - zone.transform.position).sqrMagnitude;
+            if (tempDistance < minDistance)
+            {
+                minDistance = tempDistance;
+                closestZone = zone;
+            }
+        }
+
+        return closestZone;
     }
 
     

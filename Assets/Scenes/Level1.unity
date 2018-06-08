@@ -5044,7 +5044,16 @@ MonoBehaviour:
   m_LookAt: {fileID: 1955117469}
   m_Follow: {fileID: 1955117469}
   m_ShowDebugText: 0
-  m_ChildCameras: []
+  m_ChildCameras:
+  - {fileID: 701285767}
+  - {fileID: 235791985}
+  - {fileID: 2012015624}
+  - {fileID: 750229928}
+  - {fileID: 356289310}
+  - {fileID: 1532493677}
+  - {fileID: 1756521915}
+  - {fileID: 706390842}
+  - {fileID: 113333396}
   m_ActivateAfter: 0
   m_MinDuration: 0
   m_RandomizeChoice: 0
@@ -22479,6 +22488,11 @@ Prefab:
         type: 2}
       propertyPath: informationToListen.Array.data[12]
       value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 114920914728471186, guid: fe699a5fe9ebc3e46925142d525ea5df,
+        type: 2}
+      propertyPath: stateUpdates.Array.data[1].internalStateUpdateTime
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: fe699a5fe9ebc3e46925142d525ea5df, type: 2}

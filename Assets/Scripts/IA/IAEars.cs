@@ -29,6 +29,7 @@ public class IAEars : MonoBehaviour {
 
     public void Heard(Transform source, NoiseType type)
     {
+        Debug.Log("Heard : " + type.ToString());
         switch(type)
         {
             case NoiseType.INTERPEL:

@@ -30,6 +30,11 @@ public class IAStateIdle : IAState
         {
             attendingInfo = null;
         }
+
+        if (brain.behavior == IABrain.IABehaviour.OFFICER && previousState != IAStateTag.WORKING)
+        {
+            brain.ChangeState(IAStateTag.WORKING);
+        }
     }
 
     protected override void PeriodicStateUpdate()
@@ -160,7 +165,7 @@ public class IAStateIdle : IAState
                 }
                 else
                 {
-                    float rangeIdle = Random.Range(0f, 100f);
+                    float rangeIdle = 0f;//Random.Range(0f, 100f);
                     if (rangeIdle < 25f)
                     {
                         List<string> allPatrol = UnitManager.instance.GetAllUnits().FindAll(c => c.Contains("PATROL"));
@@ -267,13 +272,22 @@ public class IAStateIdle : IAState
         minimumDistance = Mathf.Infinity;
         foreach (PatrolStatus pat in patrolStatus)
         {
-            distanceCache = Vector3.Distance(ZoneManager.instance.allZones.Find(c => c.zoneName == pat.currentZone).transform.position, zoneToSearch.transform.position);
-            if (distanceCache < minimumDistance)
+            if(pat.currentZone != "null")
             {
-                minimumDistance = distanceCache;
-                closestUnit = pat.unitID;
+                distanceCache = Vector3.Distance(ZoneManager.instance.allZones.Find(c => c.zoneName == pat.currentZone).transform.position, zoneToSearch.transform.position);
+                if (distanceCache < minimumDistance)
+                {
+                    minimumDistance = distanceCache;
+                    closestUnit = pat.unitID;
+                }
             }
         }
+
+        if(string.IsNullOrEmpty(closestUnit))
+        {
+            return patrolStatus[Random.Range(0, patrolStatus.Count)].unitID;
+        }
+
         return closestUnit;
     }
 

@@ -79,12 +79,14 @@ public class IAMouth : MonoBehaviour {
         int resultCount = Physics.OverlapSphereNonAlloc(transform.position, voiceRange, speakingTo, 1 << UnitManager.instance.friendLayer | 1 << UnitManager.instance.intruderLayer);
         IABrain enemyBrainCatch;
 
+        Debug.Log("Speak : " + type.ToString() + " : " + resultCount + " ears catched");
+
         for (int i=0; i<resultCount; i++)
         {
             if(speakingTo[i].transform.position != transform.position)
             {
                 enemyBrainCatch = speakingTo[i].GetComponent<IABrain>();
-                if(enemyBrainCatch != null)
+                if(enemyBrainCatch != null && enemyBrainCatch != brain)
                 {
                     enemyBrainCatch.ears.Heard(brain.transform, type);
                 }

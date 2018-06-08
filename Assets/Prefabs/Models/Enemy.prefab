@@ -2088,7 +2088,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brain: {fileID: 114920914728471186}
   radio: {fileID: 114290058675121012}
-  voiceRange: 3
+  voiceRange: 5
 --- !u!114 &114867068217679614
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2133,11 +2133,11 @@ MonoBehaviour:
   - state: 2
     internalStateUpdateTime: 1
   - state: 0
-    internalStateUpdateTime: 3
+    internalStateUpdateTime: 1
   - state: 1
     internalStateUpdateTime: 2
   - state: 3
-    internalStateUpdateTime: 2
+    internalStateUpdateTime: 1
   - state: 4
     internalStateUpdateTime: 0.2
   behavior: 0
