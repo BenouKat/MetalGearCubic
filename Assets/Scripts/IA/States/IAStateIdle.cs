@@ -26,11 +26,13 @@ public class IAStateIdle : IAState
 
     protected override void OnEnableState(IAStateTag previousState)
     {
+        //If not coming from working or checking, the attendingInfo (unit that needs to respond to the officer) resets
         if(previousState != IAStateTag.WORKING && previousState != IAStateTag.CHECKING)
         {
             attendingInfo = null;
         }
 
+        //If the officer is back from a state that is not working, let's go to work before idle
         if (brain.behavior == IABrain.IABehaviour.OFFICER && previousState != IAStateTag.WORKING)
         {
             brain.ChangeState(IAStateTag.WORKING);
@@ -50,19 +52,24 @@ public class IAStateIdle : IAState
         }
     }
 
+    //For normal patrol
     void PatrolUpdate()
     {
+        //If there's nothing to say and not saying anything
         if (brain.mouth.HasNothingToSay() && !brain.mouth.IsTalkingToRadio())
         {
+            //Find orders
             IAInformation order = brain.memory.AccessSoftMemory().Find(c => c.toDo);
+            //Meet officer order
             if (order != null && order.type == IAInformation.InformationType.MEETOFFICER)
             {
                 brain.memory.AccessSoftMemory().Remove(order);
-                brain.meetingTarget = ZoneManager.instance.allZones.Find(c => c.zoneName.Contains("Officer"));
+                brain.meetingTarget = UnitManager.instance.GetOfficerZone();
                 brain.talkingTarget = UnitManager.instance.GetCurrentOfficer();
                 brain.legs.SetDestinationToClosest(brain.meetingTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
                 brain.ChangeState(IAStateTag.TALKING);
             }
+            //Search zone order
             else if (order != null && order.type == IAInformation.InformationType.SEARCHZONE)
             {
                 brain.memory.AccessSoftMemory().Remove(order);
@@ -72,6 +79,7 @@ public class IAStateIdle : IAState
             }
             else
             {
+                //Get a new zone to go and go
                 if (order != null) brain.memory.AccessSoftMemory().Remove(order);
                 brain.SetZoneTarget();
                 if (Random.Range(0f, 100f) < brain.talkative)
@@ -86,25 +94,30 @@ public class IAStateIdle : IAState
 
     IAInformation attendingInfo = null;
     float timeAttending;
-
-
     public float lostUnitTimeout = 30f;
     List<PatrolStatus> patrolStatus = new List<PatrolStatus>();
 
+    //Officer update
     void OfficerUpdate()
     {
+        //If there's nothing to say and say nothing and nothing to heard
         if (brain.mouth.HasNothingToSay() && !brain.mouth.IsTalkingToRadio() && !brain.ears.IsListeningRadio())
         {
+            //Get all orders of this type
             IAInformation order = brain.memory.GetOrderOfTypes(IAInformation.InformationType.DEVIATETOZONE,
                                                         IAInformation.InformationType.BRINGTOOFFICER,
                                                         IAInformation.InformationType.MEETOFFICER);
+            //If there's order it means that the officer ask for status update and waiting to give the order 
             if (order != null)
             {
+                //Update the patrol status
                 UpdatePatrolStatus();
                 if (IsPatrolStatusInitialized())
                 {
+                    //If there's a patrol that didn't answer since a certain amount of time
                     if (!HasAPatrolSlientSince(order.timeCreation))
                     {
+                        //We clean the order to gives and gives the order
                         brain.memory.CleanOrders();
                         if (order.type == IAInformation.InformationType.DEVIATETOZONE)
                         {
@@ -128,45 +141,53 @@ public class IAStateIdle : IAState
                             timeAttending = Time.time;
                         }
                     }
-                    else
+                    else //If a patrol didn't answer
                     {
+                        //Check if a unit has disappear
                         ConfirmDisappearedUnit(order.timeCreation);
                     }
                 }
             }
-            else
+            else //If not order
             {
+                //If we are waiting confirmation from the unit who receive the order
                 if (brain.GetOrderConfirmation() != null)
                 {
                     UpdatePatrolStatus();
                     string[] orderParameterSplit = brain.GetOrderConfirmation().parameters.Split('$');
                     PatrolStatus pat = patrolStatus.Find(c => c.unitID == orderParameterSplit[0]);
+                    //If the unit has talk since the order, we relaunch the order
                     if (pat != null && pat.lastMessage > brain.GetOrderConfirmation().timeCreation)
                     {
                         brain.mouth.TellInformationToOthers(brain.GetOrderConfirmation().type, 4f, brain.GetOrderConfirmation().parameters, true);
                     }
-                    else
+                    else //Else we check if the unit has disappear
                     {
                         ConfirmDisappearedUnit(brain.GetOrderConfirmation().timeCreation);
                     }
                 }
+                //If the order has been given and the unit is on his way
                 else if (attendingInfo != null)
                 {
+                    //Checinkg the time the unit operate
                     if (Time.time - timeAttending > (attendingInfo.type == IAInformation.InformationType.MEETOFFICER ? 60f : 120f))
                     {
+                        //Update patrol status
                         UpdatePatrolStatus();
+                        //Prepare to re-ask the task
                         brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
                         brain.memory.RegisterMemory(new IAInformation(brain.unitID, IAInformation.InformationType.MEETOFFICER, 0f, attendingInfo.parameters, true));
                     }
                     else
                     {
+                        //It's normal, lets back to work
                         brain.ChangeState(IAStateTag.WORKING);
                     }
                 }
                 else
                 {
                     float rangeIdle = 0f;//Random.Range(0f, 100f);
-                    if (rangeIdle < 25f)
+                    if (rangeIdle < 25f) //We choose to ask a unit to meet the officer
                     {
                         List<string> allPatrol = UnitManager.instance.GetAllUnits().FindAll(c => c.Contains("PATROL"));
                         string patrolSelected = allPatrol[Random.Range(0, allPatrol.Count)];
@@ -175,7 +196,7 @@ public class IAStateIdle : IAState
                         attendingInfo = brain.mouth.GetLastInfoToCommunicate();
                         timeAttending = Time.time;
                     }
-                    else if (rangeIdle >= 25f && rangeIdle < 50f)
+                    else if (rangeIdle >= 25f && rangeIdle < 50f) //We choose to ask status to bring something to the officer
                     {
                         UpdatePatrolStatus();
                         brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
@@ -183,13 +204,13 @@ public class IAStateIdle : IAState
                         attendingInfo = brain.mouth.GetLastInfoToCommunicate();
                         timeAttending = Time.time;
                     }
-                    else if (rangeIdle >= 50f && rangeIdle < 75f)
+                    else if (rangeIdle >= 50f && rangeIdle < 75f) //We choose to ask status to check a zone
                     {
                         UpdatePatrolStatus();
                         brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
                         brain.memory.RegisterMemory(new IAInformation(brain.unitID, IAInformation.InformationType.DEVIATETOZONE, 0f, "", true));
                     }
-                    else
+                    else //Back to work
                     {
                         brain.ChangeState(IAStateTag.WORKING);
                     }
@@ -198,8 +219,10 @@ public class IAStateIdle : IAState
         }
     }
 
+    //Check if the unit has disappear
     public void ConfirmDisappearedUnit(float timeAsk)
     {
+        //Check the ask status order
         List<IAInformation> orderStatus = brain.memory.GetOrdersOfType(IAInformation.InformationType.ASKSTATUS);
         if (orderStatus != null && orderStatus.Count > 0)
         {

@@ -20,6 +20,7 @@ public class UnitManager : MonoBehaviour {
     }
 
     Transform currentOfficer;
+    Zone officerZone;
     List<string> unitIDs = new List<string>();
     char[] charArray;
 
@@ -40,11 +41,22 @@ public class UnitManager : MonoBehaviour {
         return currentOfficer;
     }
 
+    public void SetOfficerZone(Zone zone)
+    {
+        officerZone = zone;
+    }
+
+    public Zone GetOfficerZone()
+    {
+        return officerZone;
+    }
+
     public List<string> GetAllUnits()
     {
         return unitIDs;
     }
 
+    //Get new ID for unit
     public string GetNewUnitID(string prefix)
     {
         string newUnit = prefix + Random.Range(0, 1000).ToString("000") + "-" + charArray[Random.Range(0, charArray.Length)];

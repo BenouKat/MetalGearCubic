@@ -37,6 +37,7 @@ public class IALegs : MonoBehaviour {
         return agent.velocity.magnitude;
     }
 
+    //Get multiple targets and set the destination to the closest
     public void SetDestinationToClosest(List<Transform> targets, Speed speed, bool stopIfCanBeSeen = false, float stopDistance = 0f)
     {
         Transform selectedTarget = null;
@@ -62,18 +63,22 @@ public class IALegs : MonoBehaviour {
         }
     }
 
+    //Get the length of a Nav Mesh Path
     NavMeshPath pathFromDistance;
     float distanceFrom = 0f;
     public float GetDistanceFrom(Transform target)
     {
+        //Calculate the path
         agent.CalculatePath(target.position, pathFromDistance);
         distanceFrom = 0f;
+        //If the corners has less than to corner, the distance is 0
         if (pathFromDistance.corners.Length < 2)
         {
             return 0f;
         }
         else
         {
+            //Simple addition for squared distance (enough to make comparaison)
             for (int i = 0; i < pathFromDistance.corners.Length - 1; i++)
             {
                 distanceFrom += (pathFromDistance.corners[i] - pathFromDistance.corners[i + 1]).sqrMagnitude;
@@ -83,7 +88,8 @@ public class IALegs : MonoBehaviour {
         }
     }
 
-    public void StopDestination()
+    //Cancel the destination of the agent
+    public void CancelDestination()
     {
         currentTarget = null;
         agent.isStopped = true;
@@ -91,13 +97,18 @@ public class IALegs : MonoBehaviour {
         lookAtTarget = false;
     }
 
+    //Set the destination of the age,t
     public void SetDestination(Transform target, Speed speed, bool stopIfCanBeSeen = false, float seenDistance = 0f, float stopDistance = 0f)
     {
         currentTarget = target;
+        //Stop if can be seen means that if the agent see the target at the seen distance, it stops
         this.stopIfCanBeSeen = stopIfCanBeSeen;
-        this.isDestinationMoving = stopDistance > 0f;
+        //The seen distance max of the current target
         this.seenDistance = seenDistance <= 0f ? brain.eyes.spotDistance : seenDistance;
+        //If the stop distance > 0, it means that the destination is moving, else we use the two variable above
+        this.isDestinationMoving = stopDistance > 0f;
 
+        //Set the variables
         agent.stoppingDistance = stopDistance;
         agent.speed = GetSpeedValue(speed);
         hasSetDestination = false;
@@ -105,12 +116,14 @@ public class IALegs : MonoBehaviour {
         lookAtTarget = false;
     }
 
+    //Lock the direction on target
     public void TurnToTarget(Transform target)
     {
         lookAtTarget = true;
         currentTarget = target;
     }
 
+    //Stop the direction
     public void StopTurnToTarget()
     {
         lookAtTarget = false;
@@ -124,10 +137,13 @@ public class IALegs : MonoBehaviour {
     
     private void Update()
     {
+        //If the target exist
         if(currentTarget != null)
         {
+            //Update rotation any time
             RotationUpdate();
 
+            //If not locking the direction to the target, we move
             if(!lookAtTarget) PositionUpdate();
         }
     }
@@ -135,17 +151,22 @@ public class IALegs : MonoBehaviour {
     Vector3 lookAtPosition;
     void RotationUpdate()
     {
+        //If we have the enemy on sight or lock eyes to target
         if (brain.eyes.HasTargetOnSight() || lookAtTarget)
         {
+            //We stop the auto rotation of the agent
             if(agent.updateRotation)
             {
                 agent.updateRotation = false;
             }
+            //We rotate
             rotationHelper.position = transform.position;
             rotationHelper.LookAt(lookAtTarget ? currentTarget : brain.eyes.GetEyesTarget());
         }
+        //If the agent is stop, can see the target and have reached destination
         else if(agent.isStopped && stopIfCanBeSeen && hasReachedDestination)
         {
+            //We rotate
             if (agent.updateRotation)
             {
                 agent.updateRotation = false;
@@ -155,30 +176,36 @@ public class IALegs : MonoBehaviour {
                 rotationHelper.LookAt(lookAtPosition);
             }
         }
-        else
+        else //Else we let the agent update its rotation
         {
             agent.updateRotation = true;
         }
 
+        //If it's not auto, we update the rotation manually
         if(!agent.updateRotation)
         {
             agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, rotationHelper.rotation, speedRotation);
         }
     }
 
+    //Positional update
     void PositionUpdate()
     {
+        //If the target can be seen at seen distance
         if (stopIfCanBeSeen && brain.eyes.CanBeSeen(currentTarget, seenDistance, currentTarget.gameObject.layer))
         {
+            //Stop
             agent.isStopped = true;
             if (!isDestinationMoving) hasReachedDestination = true;
 
+        //If the target is moving or we didn't set the destination, we set the destination
         } else if (isDestinationMoving || !hasSetDestination)
         {
             agent.isStopped = false;
             agent.SetDestination(currentTarget.position);
             hasSetDestination = true;
 
+        //If the destination is not moving and the remaining distance is less than the stop distance, the destination is reached
         }else if(!isDestinationMoving && agent.remainingDistance <= agent.stoppingDistance && agent.pathStatus == NavMeshPathStatus.PathComplete)
         {
             hasReachedDestination = true;

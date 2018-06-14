@@ -139,9 +139,11 @@ public class IABrain : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        //Set some initial parameters
         unitID = UnitManager.instance.GetNewUnitID(behavior.ToString());
         pendingCheckers = new List<Transform>();
 
+        //Set checkers division to the Working IA checkers
         if(!checkersDivisions.Exists(c => c.maxAngle >= 180f))
         {
             checkersDivisions.Add(new BestChecker(180f, 100f));
@@ -151,28 +153,38 @@ public class IABrain : MonoBehaviour {
             return bc1.maxAngle.CompareTo(bc2.maxAngle);
         });
 
+        //Set state update
         foreach (StateUpdate stateUpdate in stateUpdates)
         {
             availableStates.Add(IAState.CreateNewState(stateUpdate.state, this, stateUpdate.internalStateUpdateTime));
         }
 
+        //If officer, notice to the unit manager
         if(behavior == IABehaviour.OFFICER)
         {
+            //If there's no officer zone, set it
+            if(UnitManager.instance.GetOfficerZone() == null)
+            {
+                UnitManager.instance.SetOfficerZone(ZoneManager.instance.GetZone(transform.position));
+            }
             UnitManager.instance.SetOfficer(transform);
         }
 
+        //Change state to IDLE
         ChangeState(IAState.IAStateTag.IDLE);
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
+        //Spot enemy (to remove ?)
         if (currentState.layer == IAState.IAStateLayer.PASSIVE && eyes.HasTargetOnSight())
         {
             mouth.SayToRadio(null);
             ChangeState(IAState.IAStateTag.SPOT);
         }
 
+        //If officer is waiting for confirmation and the confirmation didn't come, we re-do an idle state
         if (behavior == IABehaviour.OFFICER && orderWaitingConfirmation != null)
         {
             if(Time.time - orderWaitingConfirmation.timeCreation > confirmationOrderTimeout)
@@ -181,6 +193,7 @@ public class IABrain : MonoBehaviour {
             }
         }
 
+        //State update
         currentState.StateUpdate();
 	}
 
@@ -199,6 +212,7 @@ public class IABrain : MonoBehaviour {
     #endregion
 
     #region Communication
+    //Process information into the brain to react
     public void ProcessInformation(IAInformation information)
     {
         if (!informationToListen.Contains(information.type)) return;
@@ -241,26 +255,31 @@ public class IABrain : MonoBehaviour {
         }
     }
 
+    //Unit heard that someone is searching a zone
     void ProcessSearchZone(IAInformation information)
     {
         if (zoneTarget != null)
         {
+            //If it's the same zone that this unit
             if (zoneTarget.zoneName == information.parameters)
             {
+                //And he's inside
                 if (zoneTarget.IsInsideZone(transform.position))
                 {
+                    //Say that he's already here
                     mouth.TellInformationToOthers(IAInformation.InformationType.ALREADYZONE, 2f, information.parameters, true);
                 }
-                else
+                else //Else it's not going into it
                 {
                     CancelZoneTarget();
                 }
-            }
+            } //if the zone is close and the unit is friendly, we wants to go instead
             else if (Random.Range(0f, 100f) <= friendly
             && !memory.AccessSoftMemory().Exists(c => c.toDo)
             && zoneTarget.zoneEntries.Exists(c => c.zoneConnected.Exists(d => d.zoneName == information.parameters))
             && zoneTarget.zoneEntries.Count > 1)
             {
+                //Telling
                 mouth.RemoveInformation(IAInformation.InformationType.SEARCHZONE);
                 mouth.TellInformationToOthers(IAInformation.InformationType.REPLACEZONE, 3f, information.parameters, true);
                 memory.RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, information.parameters, true), true);
@@ -268,38 +287,48 @@ public class IABrain : MonoBehaviour {
         }
     }
 
+    //Unit heard than a zone is cleared
     void ProcessZoneClear(IAInformation information)
     {
+        //If it's my zone
         if (zoneTarget != null && information.parameters == zoneTarget.zoneName)
         {
+            //Nope
             CancelZoneTarget();
         }
         ForgetThisZoneTarget(information.parameters);
     }
 
+    //Unit heard that someone is replacing someone else in a zone
     void ProcessReplaceZone(IAInformation information)
     {
+        //It's my zone ! Im' replaced
         if (zoneTarget != null && information.parameters == zoneTarget.zoneName)
         {
+            //Replacement, remember that a unit is searcing the zone
             CancelZoneTarget();
             mouth.TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
             memory.RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
         }
+        //Already clared
         else if (zoneTarget == null && mouth.ExistInformation(IAInformation.InformationType.ZONECLEAR, information.parameters))
         {
             mouth.TellInformationToOthers(IAInformation.InformationType.NOK, 0.5f, information.id.ToString());
         }
-        else
+        else //If it doesn't concerned me, I just record the info
         {
             memory.RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, information.parameters), true);
         }
         ForgetThisZoneTarget(information.parameters);
     }
 
+    //Unit heard that somone is already in this zone
     void ProcessAlreadyZone(IAInformation information)
     {
+        //Oops, it's me
         if (zoneTarget != null && information.parameters == zoneTarget.zoneName)
         {
+            //I cancel this objective
             CancelZoneTarget();
             mouth.TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
         }
@@ -308,34 +337,43 @@ public class IABrain : MonoBehaviour {
 
     }
 
+    //Unit have order to search a specific zone
     void ProcessDeviateToZone(IAInformation information)
     {
+        //Me or all unit ?
         string[] parametersSplit = information.parameters.Split('$');
         if (parametersSplit[0] == unitID || parametersSplit[0] == "all")
         {
+            //Searching the zone, confirm and go in it immediatly
             SetZoneTarget(ZoneManager.instance.allZones.Find(c => c.zoneName == parametersSplit[1]));
             mouth.TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
             legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.RUN);
         }
     }
 
+    //Unit heard a meeting with the officer
     void ProcessMeetOfficer(IAInformation information)
     {
+        //It's me ?
         if (unitID == information.parameters)
         {
+            //I cancel my zone, confirm and go to talk with the officer at the officer room
             zoneTarget = null;
             mouth.TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
             ChangeState(IAState.IAStateTag.TALKING);
-            meetingTarget = ZoneManager.instance.allZones.Find(c => c.zoneName.Contains("Officer"));
+            meetingTarget = UnitManager.instance.GetOfficerZone();
             talkingTarget = UnitManager.instance.GetCurrentOfficer();
         }
     }
 
+    //Unit heard bring something to officer
     void ProcessBringToOfficer(IAInformation information)
     {
+        //it's me ?
         string[] parametersBrings = information.parameters.Split('$');
         if (unitID == parametersBrings[0])
         {
+            //Ok ! If parameter is "1" it means immediatly, so I cancel my zone target
             mouth.TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
             if (parametersBrings[2] == "1")
             {
@@ -346,22 +384,29 @@ public class IABrain : MonoBehaviour {
         }
     }
 
+    //Unit heard question for status update
     void ProcessAskStatus(IAInformation information)
     {
+        //It's me ?
         if (information.parameters == unitID || information.parameters == "all")
         {
+            //Give status update
             mouth.TellInformationToOthers(IAInformation.InformationType.TELLSTATUS, 2f, unitID + "$" + ZoneManager.instance.GetZone(transform.position).zoneName);
         }
     }
 
+    //Unit heard status update
     void ProcessTellStatus(IAInformation information)
     {
+        //Update the patrol status
         string[] parametersStatus = information.parameters.Split('$');
         ((IAStateIdle)GetState(IAState.IAStateTag.IDLE)).UpdatePatrolStatus(parametersStatus[0], parametersStatus[1]);
     }
 
+    //Unit heard agreement / disagreement
     void ProcessAgreement(IAInformation information)
     {
+        //If the order match, no waiting
         if (orderWaitingConfirmation != null && orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
     }
     #endregion
@@ -388,13 +433,15 @@ public class IABrain : MonoBehaviour {
         memory.CleanOrders(IAInformation.InformationType.SEARCHZONE, zoneName);
     }
 
+    //Stop the patrol to check this target and decide to go elsewhere
     void CancelZoneTarget()
     {
         zoneTarget = null;
         ChangeState(IAState.IAStateTag.IDLE);
-        legs.StopDestination();
+        legs.CancelDestination();
     }
 
+    //Get a zone to search from memory
     public List<Zone> GetValidZoneToSearch()
     {
         List<Zone> validZoneToVisit = new List<Zone>();
@@ -416,6 +463,7 @@ public class IABrain : MonoBehaviour {
         return validZoneToVisit;
     }
 
+    //Get the closest zone for a list, with an error rate to not pick the very closest
     Zone GetClosestZoneWithErrorRate(List<Zone> validZones, float errorRate)
     {
         float minDistance = Mathf.Infinity;
@@ -482,6 +530,7 @@ public class IABrain : MonoBehaviour {
         eyes.ProcessCheckers(ref pendingCheckers);
     }
 
+    //Get the best checker to go after the last one
     BestChecker bestChecker;
     public Transform GetBestChecker()
     {
@@ -497,6 +546,7 @@ public class IABrain : MonoBehaviour {
         float chanceMax = 0f;
         foreach (Transform checker in pendingCheckers)
         {
+            //Get the max distance checker for each angle in Best Checker list
             angle = Vector3.Angle(transform.forward, checker.position - transform.position);
             distance = (checker.position - transform.position).sqrMagnitude;
 
@@ -510,18 +560,21 @@ public class IABrain : MonoBehaviour {
             }
         }
         
+        //Get the best candidate for the chance given (higher is the chance, narrow will be the angle)
         float randomSeed = Random.Range(0f, chanceMax);
 
         return checkersDivisions.Find(c => c.selectedChecker != null && randomSeed <= c.chance).selectedChecker;
     }
 
+    //Check status
     public void SetCheck(Transform source)
     {
-        legs.StopDestination();
+        legs.CancelDestination();
         ChangeState(IAState.IAStateTag.CHECKING);
         checkTarget = source;
     }
 
+    //Stop talking
     public void StopTalking()
     {
         legs.StopTurnToTarget();

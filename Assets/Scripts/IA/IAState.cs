@@ -19,12 +19,14 @@ public abstract class IAState {
         this.updateTime = updateTime;
     }
 
+    //When the state change
     public void OnEnable(IAStateTag previousState)
     {
         OnEnableState(previousState);
         TurnReady();
     }
     
+    //On Update
     public void StateUpdate()
     {
         ConstantStateUpdate();
@@ -35,20 +37,23 @@ public abstract class IAState {
         }
     }
 
+    //Wait for another turn
     public void ResetUpdateTime()
     {
         lastUpdate = Time.time;
     }
 
+    //Invoke next update directly next frame
     public void TurnReady()
     {
         lastUpdate = Time.time - updateTime;
     }
     
     protected virtual void OnEnableState(IAStateTag previousState) { }
-    protected virtual void ConstantStateUpdate() { }
-    protected abstract void PeriodicStateUpdate();
+    protected virtual void ConstantStateUpdate() { } //On Update every frame
+    protected abstract void PeriodicStateUpdate(); //On Update every update time
 
+    //Create a new state from the tag (gives the right child class)
     public static IAState CreateNewState(IAStateTag tag, IABrain brain, float updateTime)
     {
         switch(tag)

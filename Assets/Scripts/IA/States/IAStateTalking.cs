@@ -20,7 +20,7 @@ public class IAStateTalking : IAState
         if (brain.meetingTarget != null && brain.meetingTarget.IsInsideZone(brain.transform.position))
         {
             brain.meetingTarget = null;
-            brain.legs.StopDestination();
+            brain.legs.CancelDestination();
 
             if (brain.talkingTarget == null)
             {
