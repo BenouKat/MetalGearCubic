@@ -119,6 +119,7 @@ public class IALegs : MonoBehaviour {
     //Lock the direction on target
     public void TurnToTarget(Transform target)
     {
+        CancelDestination();
         lookAtTarget = true;
         currentTarget = target;
     }

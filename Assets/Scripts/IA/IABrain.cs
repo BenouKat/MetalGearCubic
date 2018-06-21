@@ -570,8 +570,8 @@ public class IABrain : MonoBehaviour {
     public void SetCheck(Transform source)
     {
         legs.CancelDestination();
-        ChangeState(IAState.IAStateTag.CHECKING);
         checkTarget = source;
+        ChangeState(IAState.IAStateTag.CHECKING);
     }
 
     //Stop talking
