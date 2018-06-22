@@ -25,7 +25,7 @@ public class FillShelf : MonoBehaviour {
 	public float percentSideOffset;
 	public List<Material> materials;
 	public Mesh meshBox;
-	[Range(1f, 10f)]
+	[Range(1f, 20f)]
 	public float density;
 	public float randomRotation;
 	public float percentDeepOffset;
@@ -34,8 +34,20 @@ public class FillShelf : MonoBehaviour {
 	Vector3 boxMinSizeLocal;
 	public Vector3 boxMaxSize;
 	Vector3 boxMaxSizeLocal;
-	
-	public void Fill()
+
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            Debug.Log("refresh");
+            Fill();
+        }
+    }
+
+#endif
+
+    public void Fill()
 	{
         shape = GetComponent<BoxCollider>();
 		Transform shelfContent = transform.Find("ShelfContent");
@@ -81,12 +93,12 @@ public class FillShelf : MonoBehaviour {
                 randomScale.y = Mathf.Lerp(boxMinSizeLocal.y, boxMaxSizeLocal.y, ((randomScale.x / boxMaxSizeLocal.x) + (randomScale.z / boxMaxSizeLocal.z)) / 2f);
 
 
-				if(!topBox && oldBox != null && oldBox.localScale.x < randomScale.x && oldBox.localScale.z < randomScale.z 
-				&& ((i == plate.Count - 1) || ((groundPos + oldBox.localScale.y + randomScale.y) < (plate[i+1].localPosition.y + (plate[i+1].localScale.y/2f)))))
+				if(!topBox && oldBox != null && oldBox.localScale.x > randomScale.x && oldBox.localScale.z > randomScale.z 
+				&& ((i == plate.Count - 1) || ((groundPos + oldBox.localScale.y + randomScale.y) < (plate[i+1].localPosition.y - (plate[i+1].localScale.y/2f)))))
 				{
 					Transform box = InstanceBox(shelfContent);
 					box.localScale = randomScale;
-					box.localPosition = new Vector3(oldBox.localPosition.x, oldBox.localPosition.y + (oldBox.localScale.y/2f), oldBox.localPosition.z + Random.Range(-percentDeepOffset, percentDeepOffset));
+					box.localPosition = new Vector3(oldBox.localPosition.x, oldBox.localPosition.y + (oldBox.localScale.y/2f) + (randomScale.y/2f), oldBox.localPosition.z + Random.Range(-percentDeepOffset, percentDeepOffset));
                     topBox = true;
 				}else{
                     topBox = false;
@@ -98,9 +110,9 @@ public class FillShelf : MonoBehaviour {
 						currentLength += -length/2f - (currentLength - (randomScale.x/2f));
 					}else if(oldBox != null && currentLength + (randomScale.x/2f) > length/2f)
 					{
-						currentLength -= length/2f - (currentLength + (randomScale.x/2f));
+						currentLength -= (currentLength + (randomScale.x/2f)) - (length/2f);
 						
-						if((oldBox.localPosition.x + oldBox.localScale.x/2f) > currentLength)
+						if((oldBox.localPosition.x + (oldBox.localScale.x/2f) + (randomScale.x/2f)) > currentLength)
 						{
 							break;
 						}
@@ -124,13 +136,15 @@ public class FillShelf : MonoBehaviour {
 		Transform boxTrans = box.transform;
 		boxTrans.SetParent(root);
 		boxTrans.localRotation = Quaternion.identity;
-		boxTrans.Rotate(Vector3.up, randomRotation);
+		boxTrans.Rotate(Vector3.up, Random.Range(-randomRotation, randomRotation));
 		
 		MeshFilter meshFilter = box.AddComponent<MeshFilter>();
 		meshFilter.mesh = meshBox;
 		
 		MeshRenderer meshRenderer = box.AddComponent<MeshRenderer>();
 		meshRenderer.sharedMaterial = materials[Random.Range(0, materials.Count)];
+
+        box.isStatic = true;
 		
 		return boxTrans;
 	}
