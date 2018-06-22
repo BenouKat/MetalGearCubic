@@ -63,7 +63,7 @@ public class IAStateIdle : IAState
             //Meet officer order
             if (order != null && order.type == IAInformation.InformationType.MEETOFFICER)
             {
-                brain.memory.AccessSoftMemory().Remove(order);
+                brain.memory.CleanOrder(order);
                 brain.meetingTarget = UnitManager.instance.GetOfficerZone();
                 brain.talkingTarget = UnitManager.instance.GetCurrentOfficer();
                 brain.legs.SetDestinationToClosest(brain.meetingTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
@@ -72,7 +72,7 @@ public class IAStateIdle : IAState
             //Search zone order
             else if (order != null && order.type == IAInformation.InformationType.SEARCHZONE)
             {
-                brain.memory.AccessSoftMemory().Remove(order);
+                brain.memory.CleanOrder(order);
                 brain.SetZoneTarget(ZoneManager.instance.allZones.Find(c => c.zoneName == order.parameters));
                 brain.legs.SetDestinationToClosest(brain.zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
                 brain.ChangeState(IAStateTag.WORKING);
@@ -80,7 +80,7 @@ public class IAStateIdle : IAState
             else
             {
                 //Get a new zone to go and go
-                if (order != null) brain.memory.AccessSoftMemory().Remove(order);
+                if (order != null) brain.memory.CleanOrder(order);
                 brain.SetZoneTarget();
                 if (Random.Range(0f, 100f) < brain.talkative)
                 {
@@ -130,7 +130,8 @@ public class IAStateIdle : IAState
                         else if (order.type == IAInformation.InformationType.BRINGTOOFFICER)
                         {
                             Debug.Log("BRING ME SHIET");
-                            Zone zoneToTake = ZoneManager.instance.allZones.Find(c => c.zoneEntries.Count == 1 && c != brain.defaultZone);
+                            List<Zone> zonesToTake = ZoneManager.instance.allZones.FindAll(c => c.zoneEntries.Count == 1 && c != brain.defaultZone);
+                            Zone zoneToTake = zonesToTake[Random.Range(0, zonesToTake.Count)];
                             brain.mouth.TellInformationToOthers(IAInformation.InformationType.BRINGTOOFFICER, 4f, GetClosestUnitName(zoneToTake) + "$" + zoneToTake.zoneName + "$" + Random.Range(0, 2).ToString(), true);
                             brain.ChangeState(IAStateTag.WORKING);
                             attendingInfo = brain.mouth.GetLastInfoToCommunicate();

@@ -161,4 +161,9 @@ public class IAMemory : MonoBehaviour {
         hardMemory.RemoveAll(c => c.toDo && c.type == type && (string.IsNullOrEmpty(parameters) || c.parameters == parameters));
     }
 
+    public void CleanOrder(IAInformation order)
+    {
+        hardMemory.Remove(order);
+    }
+
 }
