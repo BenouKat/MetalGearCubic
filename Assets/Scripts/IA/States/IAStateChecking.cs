@@ -57,7 +57,7 @@ public class IAStateChecking : IAState
     {
         if(isPositioned)
         {
-            if (checkCount < 4)
+            if (checkCount < maxCheckCount)
             {
                 checkTempPosition = brain.transform.position + Random.onUnitSphere;
                 checkTempPosition.y = brain.transform.position.y;
