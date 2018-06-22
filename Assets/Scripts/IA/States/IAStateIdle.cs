@@ -110,7 +110,6 @@ public class IAStateIdle : IAState
             //If there's order it means that the officer ask for status update and waiting to give the order 
             if (order != null)
             {
-                Debug.Log("I HAVE AN ORDER WOOOOT " + order.type);
                 //Update the patrol status
                 UpdatePatrolStatus();
                 if (IsPatrolStatusInitialized())
@@ -118,18 +117,16 @@ public class IAStateIdle : IAState
                     //If there's a patrol that didn't answer since a certain amount of time
                     if (!HasAPatrolSlientSince(order.timeCreation))
                     {
-                        Debug.Log("THEY HAVE ALL TALK WOO");
                         //We clean the order to gives and gives the order
                         brain.memory.CleanOrders();
                         if (order.type == IAInformation.InformationType.DEVIATETOZONE)
                         {
                             Zone zoneToSearch = brain.GetValidZoneToSearch().FindLast(c => true);
-                            brain.mouth.TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, GetClosestUnitName(zoneToSearch) + "$" + zoneToSearch, true);
+                            brain.mouth.TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, GetClosestUnitName(zoneToSearch) + "$" + zoneToSearch.zoneName, true);
                             brain.ChangeState(IAStateTag.WORKING);
                         }
                         else if (order.type == IAInformation.InformationType.BRINGTOOFFICER)
                         {
-                            Debug.Log("BRING ME SHIET");
                             List<Zone> zonesToTake = ZoneManager.instance.allZones.FindAll(c => c.zoneEntries.Count == 1 && c != brain.defaultZone);
                             Zone zoneToTake = zonesToTake[Random.Range(0, zonesToTake.Count)];
                             brain.mouth.TellInformationToOthers(IAInformation.InformationType.BRINGTOOFFICER, 4f, GetClosestUnitName(zoneToTake) + "$" + zoneToTake.zoneName + "$" + Random.Range(0, 2).ToString(), true);
@@ -147,14 +144,9 @@ public class IAStateIdle : IAState
                     }
                     else //If a patrol didn't answer
                     {
-                        Debug.Log("WHAT, UNIT HAVE DISAPPEARED? ");
                         //Check if a unit has disappear
                         ConfirmDisappearedUnit(order.timeCreation);
                     }
-                }
-                else
-                {
-                    Debug.Log("NOT INITIALIZED");
                 }
             }
             else //If not order
@@ -162,7 +154,6 @@ public class IAStateIdle : IAState
                 //If we are waiting confirmation from the unit who receive the order
                 if (brain.GetOrderConfirmation() != null)
                 {
-                    Debug.Log("Get order confirmation");
                     UpdatePatrolStatus();
                     string[] orderParameterSplit = brain.GetOrderConfirmation().parameters.Split('$');
                     PatrolStatus pat = patrolStatus.Find(c => c.unitID == orderParameterSplit[0]);
@@ -198,9 +189,8 @@ public class IAStateIdle : IAState
                 }
                 else
                 {
-                    Debug.Log("lets give an order");
-                    float rangeIdle = 30f;//Random.Range(0f, 100f);
-                    if (rangeIdle < 25f) //We choose to ask a unit to meet the officer
+                    float rangeIdle = Random.Range(0f, 100f);
+                    if (rangeIdle < 33f) //We choose to ask a unit to meet the officer
                     {
                         List<string> allPatrol = UnitManager.instance.GetAllUnits().FindAll(c => c.Contains("PATROL"));
                         string patrolSelected = allPatrol[Random.Range(0, allPatrol.Count)];
@@ -209,13 +199,13 @@ public class IAStateIdle : IAState
                         attendingInfo = brain.mouth.GetLastInfoToCommunicate();
                         timeAttending = Time.time;
                     }
-                    else if (rangeIdle >= 25f && rangeIdle < 50f) //We choose to ask status to bring something to the officer
+                    else if (rangeIdle >= 33f && rangeIdle < 66f) //We choose to ask status to bring something to the officer
                     {
                         UpdatePatrolStatus();
                         brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
                         brain.memory.RegisterMemory(new IAInformation(brain.unitID, IAInformation.InformationType.BRINGTOOFFICER, 0f, "", true), true);
                     }
-                    else if (rangeIdle >= 50f && rangeIdle < 75f) //We choose to ask status to check a zone
+                    else if (rangeIdle >= 66f && rangeIdle < 99f) //We choose to ask status to check a zone
                     {
                         UpdatePatrolStatus();
                         brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, "all", true);
