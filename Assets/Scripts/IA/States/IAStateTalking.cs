@@ -42,7 +42,6 @@ public class IAStateTalking : IAState
         }
         else if (brain.talkingTarget != null)
         {
-            Debug.Log("Talk : Is destination reached ? " + brain.legs.IsDestinationReached());
             if (Vector3.Distance(brain.talkingTarget.position, brain.transform.position) > 1.5f)
             {
                 if(brain.legs.IsDestinationReached())

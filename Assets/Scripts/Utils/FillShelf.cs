@@ -35,7 +35,7 @@ public class FillShelf : MonoBehaviour {
 	public Vector3 boxMaxSize;
 	Vector3 boxMaxSizeLocal;
 
-#if UNITY_EDITOR
+/*#if UNITY_EDITOR
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))
@@ -45,10 +45,11 @@ public class FillShelf : MonoBehaviour {
         }
     }
 
-#endif
+#endif*/
 
     public void Fill()
 	{
+        //Take root and empty it
         shape = GetComponent<BoxCollider>();
 		Transform shelfContent = transform.Find("ShelfContent");
 		if(shelfContent != null)
@@ -65,6 +66,7 @@ public class FillShelf : MonoBehaviour {
 			shelfContent.localScale = Vector3.one;
 		}
 
+        //Convert global size to local size for random
 		boxMinSizeLocal.x = boxMinSize.x / transform.localScale.x;
 		boxMinSizeLocal.y = boxMinSize.y / transform.localScale.y;
 		boxMinSizeLocal.z = boxMinSize.z / transform.localScale.z;
@@ -75,8 +77,10 @@ public class FillShelf : MonoBehaviour {
 		float groundPos;
 		float length = shape.size.x * (1f-percentSideOffset);
 		
+        //for each stage
 		for(int i=-1; i<plate.Count; i++)
 		{
+            //Define ground position
 			if(i == -1)
 			{
 				groundPos =  -(shape.size.y/2f) + shape.center.y;
@@ -84,15 +88,17 @@ public class FillShelf : MonoBehaviour {
 				groundPos = plate[i].localPosition.y + (plate[i].localScale.y/2f);
 			}
 			
+            //We go on the X axis for the shelf from - to +
 			float currentLength = -length/2f;
 			Transform oldBox = null;
             bool topBox = false;
 			Vector3 randomScale;
 			do{
+                //Define a random box with a random size. Y size is rlative to the x and z size
 				randomScale = new Vector3(Random.Range(boxMinSize.x, boxMaxSize.x), Random.Range(boxMinSize.y, boxMaxSize.y), Random.Range(boxMinSize.z, boxMaxSize.z));;
                 randomScale.y = Mathf.Lerp(boxMinSizeLocal.y, boxMaxSizeLocal.y, ((randomScale.x / boxMaxSizeLocal.x) + (randomScale.z / boxMaxSizeLocal.z)) / 2f);
 
-
+                //If the box is a lower size tha the previous one and the Y size do not hit the upper stage, we set it at top of the previous box
 				if(!topBox && oldBox != null && oldBox.localScale.x > randomScale.x && oldBox.localScale.z > randomScale.z 
 				&& ((i == plate.Count - 1) || ((groundPos + oldBox.localScale.y + randomScale.y) < (plate[i+1].localPosition.y - (plate[i+1].localScale.y/2f)))))
 				{
@@ -102,22 +108,28 @@ public class FillShelf : MonoBehaviour {
                     topBox = true;
 				}else{
                     topBox = false;
+
+                    //Decal the X axis 
                     currentLength += Random.Range(oldBox == null ? 0f : oldBox.localScale.x / 2f, (oldBox == null ? 0f : (oldBox.localScale.x / 2f)) + (length / density));
                     currentLength += randomScale.x/2f;
 				
+                    //If the box is out of bound (- side)
 					if(oldBox == null && currentLength - (randomScale.x/2f) < -length/2f)
 					{
 						currentLength += -length/2f - (currentLength - (randomScale.x/2f));
+                    //If the box is out of bound (+ side)
 					}else if(oldBox != null && currentLength + (randomScale.x/2f) > length/2f)
 					{
 						currentLength -= (currentLength + (randomScale.x/2f)) - (length/2f);
-						
+					    
+                        //If we decal from the + side but it hits the previous box : nope
 						if((oldBox.localPosition.x + (oldBox.localScale.x/2f) + (randomScale.x/2f)) > currentLength)
 						{
 							break;
 						}
 					}
 					
+                    //Instance the box
 					Transform box = InstanceBox(shelfContent);
 					box.localScale = randomScale;
 					box.localPosition = new Vector3(currentLength, groundPos + box.localScale.y/2f, Random.Range(-percentDeepOffset, percentDeepOffset));

@@ -72,7 +72,7 @@ public class IAStateWorking : IAState
             {
                 if (checkerCount > 0)
                 {
-                    brain.legs.SetDestination(brain.GetBestChecker() ?? brain.GetPendingCheckers()[0], IALegs.Speed.WALK, true, brain.eyes.spotDistance, 0f);
+                    brain.legs.SetDestination(brain.GetBestChecker() ?? brain.GetPendingCheckers()[0], IALegs.Speed.WALK, !brain.zoneTarget.isClosedRoom, brain.eyes.spotDistance, 0f);
                 }
                 else
                 {

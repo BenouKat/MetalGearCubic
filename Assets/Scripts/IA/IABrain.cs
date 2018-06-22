@@ -380,7 +380,7 @@ public class IABrain : MonoBehaviour {
                 CancelZoneTarget();
             }
             memory.RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.MEETOFFICER, 0f, "", true), true);
-            memory.RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, "", true), true);
+            memory.RegisterMemory(new IAInformation(unitID, IAInformation.InformationType.SEARCHZONE, 0f, parametersBrings[1], true), true);
         }
     }
 

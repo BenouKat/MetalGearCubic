@@ -312,6 +312,7 @@ public class Zone : MonoBehaviour {
 
     public string zoneName;
     public List<ZoneEntry> zoneEntries;
+    public bool isClosedRoom;
     List<Transform> zoneEntriesTrans;
     public List<Transform> zoneChecker;
     Transform trans;
@@ -326,6 +327,8 @@ public class Zone : MonoBehaviour {
         {
             zoneEntriesTrans.Add(entry.transform);
         }
+
+        isClosedRoom = zoneEntries.Count <= 1;
     }
 
     public bool IsInsideZone(Vector3 position)

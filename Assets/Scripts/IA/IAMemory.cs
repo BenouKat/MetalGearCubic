@@ -130,10 +130,10 @@ public class IAMemory : MonoBehaviour {
 
     public bool HasOrderOfTypes(params IAInformation.InformationType[] types)
     {
-        return GetOrderOfTypes(types) != null;
+        return GetLastOrderOfTypes(types) != null;
     }
 
-    public IAInformation GetOrderOfTypes(params IAInformation.InformationType[] types)
+    public IAInformation GetLastOrderOfTypes(params IAInformation.InformationType[] types)
     {
         for(int i=0; i<hardMemory.Count; i++)
         {
