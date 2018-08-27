@@ -19,8 +19,20 @@ public class UnitManager : MonoBehaviour {
         wallLayer = LayerMask.NameToLayer("Unmovable");
     }
 
+    [System.Serializable]
+    internal class EnemyPrefab
+    {
+        public IABrain.IABehaviour enemyType;
+        public GameObject prefab;
+    }
+
+    [SerializeField]
+    List<EnemyPrefab> enemyPrefabs;
     Transform currentOfficer;
+    public Transform enemiesRoot;
     Zone officerZone;
+    public Zone spawnZone;
+    public float spawnSpacement;
     List<string> unitIDs = new List<string>();
     char[] charArray;
 
@@ -30,6 +42,33 @@ public class UnitManager : MonoBehaviour {
     public int friendLayer;
     [HideInInspector]
     public int wallLayer;
+
+    public bool needToRereshUnit;
+
+    bool spawningAgent = false;
+    public void SpawnNewAgent(int agentToSpawn, IABrain.IABehaviour enemyType)
+    {
+        spawningAgent = true;
+        StartCoroutine(SpawnNewAgentRoutine(agentToSpawn, enemyPrefabs.Find(c => c.enemyType == enemyType).prefab));
+    }
+
+    IEnumerator SpawnNewAgentRoutine(int agentToSpawn, GameObject enemyPrefab)
+    {
+        for(int i=0; i<agentToSpawn; i++)
+        {
+            GameObject enemy = Instantiate(enemyPrefab);
+            enemy.transform.SetParent(enemiesRoot);
+            enemy.transform.position = spawnZone.transform.position;
+
+            yield return new WaitForSeconds(spawnSpacement);
+        }
+        spawningAgent = false;
+    }
+
+    public bool IsSpawningAgent()
+    {
+        return spawningAgent;
+    }
 
     public void SetOfficer(Transform officer)
     {

@@ -10,6 +10,8 @@ public class IAStateChecking : IAState
         layer = IAStateLayer.PASSIVE;
     }
 
+    float timeStartChecking;
+
     protected override void OnEnableState(IAStateTag previousState)
     {
         Debug.Log("Enter checking");
@@ -17,21 +19,50 @@ public class IAStateChecking : IAState
         interpelBrain = brain.checkTarget.GetComponent<IABrain>();
         isPositioned = false;
         maxCheckCount = Random.Range(2, 6);
+        timeStartChecking = Time.time;
     }
 
     protected override void ConstantStateUpdate()
     {
         isPositioned = false;
-        if (Vector3.Dot(brain.transform.forward, brain.checkTarget.forward) < -0.99f)
+        if(interpelBrain != null)
         {
-            if (interpelBrain != null && interpelBrain.currentState.tag == IAStateTag.TALKING)
+            if(interpelBrain.talkingTarget != brain.transform)
             {
-                if (Vector3.Distance(brain.checkTarget.position, brain.transform.position) < 2f)
+                brain.ChangeState(IAStateTag.IDLE);
+                return;
+            }
+
+            if (Vector3.Dot(brain.transform.forward, brain.checkTarget.forward) < -0.99f)
+            {
+                if (interpelBrain.currentState.tag == IAStateTag.TALKING)
                 {
-                    brain.talkingTarget = brain.checkTarget;
-                    brain.checkTarget = null;
-                    brain.ChangeState(IAStateTag.TALKING);
+                    if (Vector3.Distance(brain.checkTarget.position, brain.transform.position) < 2f)
+                    {
+                        brain.talkingTarget = brain.checkTarget;
+                        brain.checkTarget = null;
+                        brain.ChangeState(IAStateTag.TALKING);
+                    }
                 }
+                else if (!brain.eyes.CanBeSeen(brain.checkTarget, 1f, -1))
+                {
+                    brain.legs.SetDestination(brain.checkTarget, IALegs.Speed.RUN, true, 1f);
+                }
+                else
+                {
+                    isPositioned = true;
+                }
+            }
+            else
+            {
+                brain.legs.TurnToTarget(brain.checkTarget);
+            }
+        }
+        else
+        {
+            if(Time.time - timeStartChecking < 1f)
+            {
+                brain.legs.TurnToTarget(brain.checkTarget);
             }
             else if (!brain.eyes.CanBeSeen(brain.checkTarget, 1f, -1))
             {
@@ -42,9 +73,11 @@ public class IAStateChecking : IAState
                 isPositioned = true;
             }
         }
-        else
+        
+
+        if (brain.zoneTarget != null && (brain.zoneTarget.IsInsideZone(brain.transform.position) || brain.legs.IsDestinationReached()))
         {
-            brain.legs.TurnToTarget(brain.checkTarget);
+            brain.ProcessCheckers();
         }
     }
 
@@ -52,6 +85,7 @@ public class IAStateChecking : IAState
     int checkCount = 0;
     int maxCheckCount = 4;
     Vector3 checkTempPosition;
+    Transform transformHelper;
     bool isPositioned = false;
     protected override void PeriodicStateUpdate()
     {
@@ -59,19 +93,34 @@ public class IAStateChecking : IAState
         {
             if (checkCount < maxCheckCount)
             {
+                if (transformHelper == null) transformHelper = InstanceManager.instance.CreateEmptyObject(InstanceManager.InstanceType.Utils, "CheckingStateHelper").transform;
                 checkTempPosition = brain.transform.position + Random.onUnitSphere;
                 checkTempPosition.y = brain.transform.position.y;
-                brain.checkTarget.position = checkTempPosition;
+                transformHelper.position = checkTempPosition;
 
-                brain.legs.TurnToTarget(brain.checkTarget);
-
+                brain.legs.TurnToTarget(transformHelper);
                 checkCount++;
+
+                Debug.Log("Check count : " + checkCount);
             }
             else
             {
-                brain.checkTarget = null;
-                brain.mouth.TellInformationToOthers(IAInformation.InformationType.CHECKINGOVER, 1f, "");
-                brain.ChangeState(IAStateTag.IDLE);
+                if(brain.zoneTarget != null && brain.GetPendingCheckers().Count > 0)
+                {
+                    checkCount = 0;
+                    maxCheckCount =  Random.Range(2, 6);
+                    brain.checkTarget = brain.GetBestChecker() ?? brain.GetPendingCheckers()[0];
+
+                    Debug.Log("Check new checker");
+                }
+                else
+                {
+                    brain.zoneTarget = null;
+                    brain.checkTarget = null;
+                    brain.mouth.TellInformationToOthers(IAInformation.InformationType.CHECKINGOVER, 1f, "");
+                    brain.ChangeState(IAStateTag.IDLE);
+                }
+                
             }
         }
        

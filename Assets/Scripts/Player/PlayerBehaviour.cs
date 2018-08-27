@@ -231,13 +231,21 @@ public class PlayerBehaviour : MonoBehaviour {
             }
             
             //Shoot
-            if (Input.GetButtonDown("Shoot"))
+            if (Input.GetButtonDown("Shoot")
+#if UNITY_EDITOR
+                || Input.GetKeyDown(KeyCode.Space)
+#endif
+                )
             {
                 UpdateShootBehavior();
             }
 
             //Release
-            if(Input.GetButtonUp("Shoot"))
+            if(Input.GetButtonUp("Shoot")
+#if UNITY_EDITOR
+                || Input.GetKeyUp(KeyCode.Space)
+#endif
+                )
             {
                 GetEquipedWeapon().Release();
             }
@@ -245,7 +253,11 @@ public class PlayerBehaviour : MonoBehaviour {
         else
         {
             //Shoot
-            if (Input.GetButtonDown("Shoot"))
+            if (Input.GetButtonDown("Shoot")
+#if UNITY_EDITOR
+                || Input.GetKeyDown(KeyCode.Space)
+#endif
+                )
             {
                 GetEquipedWeapon().CallReload();
             }

@@ -29,12 +29,13 @@ public class IAStateIdle : IAState
         //If not coming from working or checking, the attendingInfo (unit that needs to respond to the officer) resets
         if(previousState != IAStateTag.WORKING && previousState != IAStateTag.CHECKING)
         {
-            attendingInfo = null;
+            ResetAttendingInfo();
         }
 
         //If the officer is back from a state that is not working, let's go to work before idle
-        if (brain.behavior == IABrain.IABehaviour.OFFICER && previousState != IAStateTag.WORKING)
+        if (brain.behavior == IABrain.IABehaviour.OFFICER && previousState != IAStateTag.WORKING && previousState != IAStateTag.IDLE)
         {
+            Debug.Log("Previous state was not working or idle : " + previousState.ToString());
             brain.ChangeState(IAStateTag.WORKING);
         }
     }
@@ -96,6 +97,7 @@ public class IAStateIdle : IAState
     float timeAttending;
     public float lostUnitTimeout = 30f;
     List<PatrolStatus> patrolStatus = new List<PatrolStatus>();
+    int maxPatrolStatus;
 
     //Officer update
     void OfficerUpdate()
@@ -114,6 +116,7 @@ public class IAStateIdle : IAState
                 UpdatePatrolStatus();
                 if (IsPatrolStatusInitialized())
                 {
+                    if(patrolStatus.Count > maxPatrolStatus) maxPatrolStatus = patrolStatus.Count;
                     //If there's a patrol that didn't answer since a certain amount of time
                     if (!HasAPatrolSlientSince(order.timeCreation))
                     {
@@ -184,11 +187,17 @@ public class IAStateIdle : IAState
                     else
                     {
                         //It's normal, lets back to work
+                        Debug.Log("its normal lets work");
                         brain.ChangeState(IAStateTag.WORKING);
                     }
                 }
                 else
                 {
+                    Debug.Log("Choose order");
+
+                    brain.memory.CleanOrders();
+                    brain.SetOrderConfirmation(null);
+
                     float rangeIdle = Random.Range(0f, 100f);
                     if (rangeIdle < 33f) //We choose to ask a unit to meet the officer
                     {
@@ -213,6 +222,7 @@ public class IAStateIdle : IAState
                     }
                     else //Back to work
                     {
+                        Debug.Log("back to work :(");
                         brain.ChangeState(IAStateTag.WORKING);
                     }
                 }
@@ -223,35 +233,58 @@ public class IAStateIdle : IAState
     //Check if the unit has disappear
     public void ConfirmDisappearedUnit(float timeAsk)
     {
+        Debug.Log("Entering confirm disappeared Unit");
         //Check the ask status order
         List<IAInformation> orderStatus = brain.memory.GetOrdersOfType(IAInformation.InformationType.ASKSTATUS);
+        
         if (orderStatus != null && orderStatus.Count > 0)
         {
-            if (orderStatus[0].timeCreation > 15f)
+            Debug.Log(orderStatus.Count + " didn't respond");
+            if (Time.time - orderStatus[0].timeCreation > 5f)
             {
                 brain.memory.CleanOrders();
+                brain.SetOrderConfirmation(null);
                 if (orderStatus.Count == patrolStatus.Count)
                 {
+                    Debug.LogWarning("Not unit found !!");
                     //Que faire ???
                 }
                 else
                 {
-                    PatrolStatus lostPat = patrolStatus.Find(c => c.unitID == orderStatus[Random.Range(0, orderStatus.Count)].parameters);
+                    Debug.Log("Tell to check");
+                    int randomUnit = Random.Range(0, orderStatus.Count);
+                    PatrolStatus lostPat = patrolStatus.Find(c => c.unitID == orderStatus[randomUnit].parameters);
                     brain.mouth.TellInformationToOthers(IAInformation.InformationType.DEVIATETOZONE, 1f, "all" + "$" + lostPat.currentZone, true);
+                    brain.ChangeState(IAStateTag.WORKING);
+                    foreach(IAInformation status in orderStatus)
+                    {
+                        RemovePatrolStatus(status.parameters);
+                        UnitManager.instance.RemoveUnitID(status.parameters);
+                    }
+                    UnitManager.instance.needToRereshUnit = true;
+                    attendingInfo = brain.mouth.GetLastInfoToCommunicate();
+                    timeAttending = Time.time;
                 }
             }
         }
         else if (patrolStatus.Exists(c => c.lastMessage < timeAsk) && (Time.time - timeAsk > lostUnitTimeout))
         {
+            Debug.Log("Some patrol didn't respond ?");
             foreach (PatrolStatus pat in patrolStatus)
             {
                 if (pat.lastMessage < timeAsk)
                 {
-                    brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 0.5f, pat.unitID, true);
-                    brain.memory.RegisterMemory(new IAInformation(brain.unitID, IAInformation.InformationType.ASKSTATUS, 0f, "", true), true);
+                    brain.mouth.TellInformationToOthers(IAInformation.InformationType.ASKSTATUS, 1f, pat.unitID, true);
+                    brain.memory.RegisterMemory(new IAInformation(brain.unitID, IAInformation.InformationType.ASKSTATUS, 0f, pat.unitID, true), true);
+                    Debug.Log("Order status recorded : " + pat.unitID);
                 }
             }
         }
+    }
+
+    public void ResetAttendingInfo()
+    {
+        attendingInfo = null;
     }
 
     void UpdatePatrolStatus()
@@ -285,6 +318,16 @@ public class IAStateIdle : IAState
     bool HasAPatrolSlientSince(float time)
     {
         return patrolStatus.Exists(c => c.lastMessage < time);
+    }
+    
+    public void RemovePatrolStatus(string unitID)
+    {
+        patrolStatus.RemoveAll(c => c.unitID == unitID);
+    }
+
+    public int GetMissingUnitCount()
+    {
+        return maxPatrolStatus - patrolStatus.Count;
     }
 
     string closestUnit;

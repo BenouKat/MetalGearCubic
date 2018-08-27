@@ -51,6 +51,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47079edb4be1fd1429a50001912612c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyPrefabs:
+  - enemyType: 0
+    prefab: {fileID: 1894174429676648, guid: fe699a5fe9ebc3e46925142d525ea5df, type: 2}
+  - enemyType: 1
+    prefab: {fileID: 1652983399280614, guid: 1dec2b2e745421b4b9b5b947e101d837, type: 2}
+  enemiesRoot: {fileID: 0}
+  spawnZone: {fileID: 0}
+  spawnSpacement: 3
   intruderLayer: 0
   friendLayer: 0
   wallLayer: 0
+  needToRereshUnit: 0

@@ -40,18 +40,7 @@ public class IALegs : MonoBehaviour {
     //Get multiple targets and set the destination to the closest
     public void SetDestinationToClosest(List<Transform> targets, Speed speed, bool stopIfCanBeSeen = false, float stopDistance = 0f)
     {
-        Transform selectedTarget = null;
-        float distanceMin = Mathf.Infinity;
-        float currentDistance = 0f;
-        foreach(Transform target in targets)
-        {
-            currentDistance = GetDistanceFrom(target);
-            if (currentDistance < distanceMin)
-            {
-                selectedTarget = target;
-                distanceMin = currentDistance;
-            }
-        }
+        Transform selectedTarget = GetClosestTransform(targets);
         
         if(selectedTarget != null)
         {
@@ -61,6 +50,24 @@ public class IALegs : MonoBehaviour {
         {
             Debug.LogWarning("Path hasn't found a selected target... No destination has been set");
         }
+    }
+
+    public Transform GetClosestTransform(List<Transform> targets)
+    {
+        Transform selectedTarget = null;
+        float distanceMin = Mathf.Infinity;
+        float currentDistance = 0f;
+        foreach (Transform target in targets)
+        {
+            currentDistance = GetDistanceFrom(target);
+            if (currentDistance < distanceMin)
+            {
+                selectedTarget = target;
+                distanceMin = currentDistance;
+            }
+        }
+
+        return selectedTarget;
     }
 
     //Get the length of a Nav Mesh Path

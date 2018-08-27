@@ -68,6 +68,15 @@ public class ListenRadioManager : MonoBehaviour {
             case IAInformation.InformationType.BRINGTOOFFICER:
                 dialogText.text += "\"" + parametersStatus[0] + ", look for " + GetRandomItem() + " in the " + parametersStatus[1] + " and bring it to me.\"";
                 break;
+            case IAInformation.InformationType.CHECKING:
+                dialogText.text += "\"Eh.... Guys I think there's something...\"";
+                break;
+            case IAInformation.InformationType.CHECKINGOVER:
+                dialogText.text += "\"I checked the place, nothing weird here.\"";
+                break;
+            case IAInformation.InformationType.ASKHELP:
+                dialogText.text += "\"Control, it seems that at least one person has disappeared from my unit. We need " + info.parameters + " new people here immediatly. Thank you.\"";
+                break;
 
         }
 

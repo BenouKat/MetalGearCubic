@@ -252,6 +252,9 @@ public class IABrain : MonoBehaviour {
             case IAInformation.InformationType.NOK:
                 ProcessAgreement(information);
                 break;
+            case IAInformation.InformationType.CHECKINGOVER:
+                ProcessCheckingOver(information);
+                break;
         }
     }
 
@@ -342,12 +345,21 @@ public class IABrain : MonoBehaviour {
     {
         //Me or all unit ?
         string[] parametersSplit = information.parameters.Split('$');
-        if (parametersSplit[0] == unitID || parametersSplit[0] == "all")
+        if(parametersSplit[0] == "all")
+        {
+            //Searching the zone but in check mode, confirm and go in it immediatly
+            SetZoneTarget(ZoneManager.instance.allZones.Find(c => c.zoneName == parametersSplit[1]));
+            mouth.TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
+            checkTarget = legs.GetClosestTransform(zoneTarget.GetAllEntriesTransform());
+            ChangeState(IAState.IAStateTag.CHECKING);
+        }
+        else if (parametersSplit[0] == unitID)
         {
             //Searching the zone, confirm and go in it immediatly
             SetZoneTarget(ZoneManager.instance.allZones.Find(c => c.zoneName == parametersSplit[1]));
+            legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.WALK);
             mouth.TellInformationToOthers(IAInformation.InformationType.OK, 0.5f, information.id.ToString());
-            legs.SetDestinationToClosest(zoneTarget.GetAllEntriesTransform(), IALegs.Speed.RUN);
+
         }
     }
 
@@ -408,6 +420,18 @@ public class IABrain : MonoBehaviour {
     {
         //If the order match, no waiting
         if (orderWaitingConfirmation != null && orderWaitingConfirmation.id.ToString() == information.parameters) orderWaitingConfirmation = null;
+    }
+
+    //Unit checking over
+    void ProcessCheckingOver(IAInformation information)
+    {
+        if(string.IsNullOrEmpty(information.parameters) && UnitManager.instance.needToRereshUnit)
+        {
+            mouth.TellInformationToOthers(IAInformation.InformationType.ASKHELP, 5f, "" + ((IAStateIdle)GetState(IAState.IAStateTag.IDLE)).GetMissingUnitCount(), false);
+            UnitManager.instance.SpawnNewAgent(((IAStateIdle)GetState(IAState.IAStateTag.IDLE)).GetMissingUnitCount(), IABehaviour.PATROL);
+            ((IAStateIdle)GetState(IAState.IAStateTag.IDLE)).ResetAttendingInfo();
+            UnitManager.instance.needToRereshUnit = false;
+        }
     }
     #endregion
 
@@ -571,6 +595,7 @@ public class IABrain : MonoBehaviour {
     {
         legs.CancelDestination();
         checkTarget = source;
+        zoneTarget = null;
         ChangeState(IAState.IAStateTag.CHECKING);
     }
 
