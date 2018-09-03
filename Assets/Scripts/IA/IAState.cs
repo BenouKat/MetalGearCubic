@@ -7,7 +7,7 @@ public abstract class IAState {
 
     protected IABrain brain;
     float lastUpdate;
-    public float updateTime;
+    float updateTime;
     public enum IAStateTag { WORKING, TALKING, IDLE, CHECKING, SPOT, FREEZE, ALERT, DANGER, PRUDENCE }
     public enum IAStateLayer { PASSIVE, ACTIVE }
     public IAStateTag tag;
@@ -26,11 +26,16 @@ public abstract class IAState {
         TurnReady();
     }
     
+    public void OnDisable(IAStateTag nextState)
+    {
+	    OnDisableState(nextState);
+    } 
+    
     //On Update
     public void StateUpdate()
     {
         ConstantStateUpdate();
-        if (Time.time - lastUpdate > updateTime)
+        if (Time.time - lastUpdate >= updateTime)
         {
             PeriodicStateUpdate();
             ResetUpdateTime();
@@ -49,9 +54,10 @@ public abstract class IAState {
         lastUpdate = Time.time - updateTime;
     }
     
-    protected virtual void OnEnableState(IAStateTag previousState) { }
-    protected virtual void ConstantStateUpdate() { } //On Update every frame
+    protected abstract void OnEnableState(IAStateTag previousState) { }
+    protected abstract void ConstantStateUpdate() { } //On Update every frame
     protected abstract void PeriodicStateUpdate(); //On Update every update time
+    protected abstract void OnDisableState(IAStateTag nextState);
 
     //Create a new state from the tag (gives the right child class)
     public static IAState CreateNewState(IAStateTag tag, IABrain brain, float updateTime)
