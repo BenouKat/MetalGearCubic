@@ -12,8 +12,6 @@ public class IAStateWorking : IAState
 
     protected override void ConstantStateUpdate()
     {
-        base.ConstantStateUpdate();
-
         switch (brain.behavior)
         {
             case IABrain.IABehaviour.PATROL:
@@ -98,4 +96,14 @@ public class IAStateWorking : IAState
             }
         }
     }
+
+	protected override void OnEnableState(IAStateTag previousState)
+	{
+		//Nothing
+	}
+
+	protected override void OnDisableState(IAStateTag nextState)
+	{
+		//Nothing
+	}
 }

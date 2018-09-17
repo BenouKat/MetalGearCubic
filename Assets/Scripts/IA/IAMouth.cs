@@ -76,7 +76,7 @@ public class IAMouth : MonoBehaviour {
 
     public void SpeakOut(IAEars.NoiseType type)
     {
-        int resultCount = Physics.OverlapSphereNonAlloc(transform.position, voiceRange, speakingTo, 1 << UnitManager.instance.friendLayer | 1 << UnitManager.instance.intruderLayer);
+        int resultCount = Physics.OverlapSphereNonAlloc(transform.position, voiceRange, speakingTo, 1 << UnitManager.instance.FriendLayer | 1 << UnitManager.instance.IntruderLayer);
         IABrain enemyBrainCatch;
 
         Debug.Log(Time.time + " - Speak : " + type.ToString() + " : " + resultCount + " ears catched");

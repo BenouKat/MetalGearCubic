@@ -358,5 +358,13 @@ public class IAStateIdle : IAState
         return closestUnit;
     }
 
-    
+	protected override void ConstantStateUpdate()
+	{
+	    //Nothing
+	}
+
+	protected override void OnDisableState(IAStateTag nextState)
+	{
+		//Nothing
+	}
 }

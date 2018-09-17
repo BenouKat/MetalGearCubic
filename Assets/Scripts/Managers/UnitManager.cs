@@ -12,83 +12,59 @@ public class UnitManager : MonoBehaviour {
         {
             instance = this;
         }
-        charArray = "AZERTYUIOPQSDFGHJKLMWXCVBN".ToCharArray();
-
-        intruderLayer = LayerMask.NameToLayer("Player");
-        friendLayer = LayerMask.NameToLayer("Enemy");
-        wallLayer = LayerMask.NameToLayer("Unmovable");
+		charArray = "AZERTYUIOPQSDFGHJKLMWXCVBN".ToCharArray();
     }
 
     [System.Serializable]
-    internal class EnemyPrefab
+    internal struct EnemyPrefab
     {
         public IABrain.IABehaviour enemyType;
         public GameObject prefab;
     }
 
     [SerializeField]
-    List<EnemyPrefab> enemyPrefabs;
-    Transform currentOfficer;
-    public Transform enemiesRoot;
-    Zone officerZone;
-    public Zone spawnZone;
-    public float spawnSpacement;
+    List<EnemyPrefab> m_enemyPrefabs;
+	[HideInInspector]
+    public Transform CurrentOfficer;
+	[SerializeField]
+    Transform m_enemiesRoot;
+    public Zone OfficerZone;
+    public Zone SpawnZone;
+    public float SpawnSpacement;
+
     List<string> unitIDs = new List<string>();
     char[] charArray;
+	Queue<GameObject> m_spawnQueue = new Queue<GameObject>();
+	float m_spawnTimer;
 
-    [HideInInspector]
-    public int intruderLayer;
-    [HideInInspector]
-    public int friendLayer;
-    [HideInInspector]
-    public int wallLayer;
+	public readonly LayerManager Layers;
 
-    public bool needToRereshUnit;
+    bool m_isSpawningAgent = false;
+	public bool IsSpawningAgent { get { return m_isSpawningAgent; } }
 
-    bool spawningAgent = false;
     public void SpawnNewAgent(int agentToSpawn, IABrain.IABehaviour enemyType)
     {
-        spawningAgent = true;
-        StartCoroutine(SpawnNewAgentRoutine(agentToSpawn, enemyPrefabs.Find(c => c.enemyType == enemyType).prefab));
+		m_isSpawningAgent = true;
+
+		for(int i=0;i<agentToSpawn;i++)
+           m_spawnQueue.Enqueue(m_enemyPrefabs.Find(c => c.enemyType == enemyType).prefab);
     }
 
-    IEnumerator SpawnNewAgentRoutine(int agentToSpawn, GameObject enemyPrefab)
-    {
-        for(int i=0; i<agentToSpawn; i++)
-        {
-            GameObject enemy = Instantiate(enemyPrefab);
-            enemy.transform.SetParent(enemiesRoot);
-            enemy.transform.position = spawnZone.transform.position;
-
-            yield return new WaitForSeconds(spawnSpacement);
-        }
-        spawningAgent = false;
-    }
-
-    public bool IsSpawningAgent()
-    {
-        return spawningAgent;
-    }
-
-    public void SetOfficer(Transform officer)
-    {
-        currentOfficer = officer;
-    }
-
-    public Transform GetCurrentOfficer()
-    {
-        return currentOfficer;
-    }
-
-    public void SetOfficerZone(Zone zone)
-    {
-        officerZone = zone;
-    }
-
-    public Zone GetOfficerZone()
-    {
-        return officerZone;
-    }
+	void Update()
+	{
+		if(m_isSpawningAgent)
+		{
+			m_spawnTimer += Time.deltaTime;
+			if(m_spawnTimer > SpawnSpacement)
+			{
+				GameObject enemy = Instantiate(m_spawnQueue.Dequeue());
+				enemy.transform.SetParent(m_enemiesRoot);
+				enemy.transform.position = SpawnZone.transform.position;
+				m_spawnTimer = 0f;
+				m_isSpawningAgent = m_spawnQueue.Count > 0;
+			}
+		}
+	}
 
     public List<string> GetAllUnits()
     {

@@ -53,9 +53,9 @@ public abstract class IAState {
     {
         lastUpdate = Time.time - updateTime;
     }
-    
-    protected abstract void OnEnableState(IAStateTag previousState) { }
-    protected abstract void ConstantStateUpdate() { } //On Update every frame
+
+	protected abstract void OnEnableState(IAStateTag previousState);
+	protected abstract void ConstantStateUpdate(); //On Update every frame
     protected abstract void PeriodicStateUpdate(); //On Update every update time
     protected abstract void OnDisableState(IAStateTag nextState);
 

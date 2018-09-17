@@ -55,7 +55,7 @@ public class IAStateTalking : IAState
             }
 
             if (Vector3.Distance(brain.talkingTarget.position, brain.transform.position) < brain.mouth.voiceRange &&
-                brain.eyes.CanBeSeen(brain.talkingTarget, brain.mouth.voiceRange, UnitManager.instance.friendLayer)
+                brain.eyes.CanBeSeen(brain.talkingTarget, brain.mouth.voiceRange, UnitManager.instance.FriendLayer)
                 && Vector3.Dot(brain.talkingTarget.forward, brain.transform.forward) > -0.9f)
             {
                 brain.mouth.SpeakOut(IAEars.NoiseType.INTERPEL);
@@ -76,4 +76,9 @@ public class IAStateTalking : IAState
             }
         }
     }
+
+	protected override void OnDisableState(IAStateTag nextState)
+	{
+		//Nothing
+	}
 }

@@ -16,14 +16,14 @@ public class InstanceManager : MonoBehaviour {
                                Graphics //Instancied graphics like hole in the wall, etc...
                             }
     [System.Serializable]
-    public struct InstanceContener
+    internal struct InstanceContener
     {
         public InstanceType type;
         public Transform target;
     }
 
     [SerializeField]
-    List<InstanceContener> instanceTargets;
+    List<InstanceContener> m_instanceTargets;
 
     private void Awake()
     {
@@ -64,12 +64,12 @@ public class InstanceManager : MonoBehaviour {
 
     public void MoveTo(InstanceType type, GameObject model)
     {
-        model.transform.SetParent(instanceTargets.Find(c => c.type == type).target);
+        model.transform.SetParent(m_instanceTargets.Find(c => c.type == type).target);
     }
 
     public bool IsRootObject(Transform t)
     {
-        foreach(InstanceContener ic in instanceTargets)
+        foreach(InstanceContener ic in m_instanceTargets)
         {
             if (t.parent == ic.target) return true;
         }

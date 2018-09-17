@@ -103,7 +103,7 @@ public class IABrain : MonoBehaviour {
     List<StateUpdate> stateUpdates;
     List<IAState> availableStates = new List<IAState>();
     public IAState currentState;
-    public enum IABehaviour { PATROL, OFFICER, INTERLEADER, INTERPATROL }
+    public enum IABehaviour { PATROL, OFFICER, INTERVENTION }
     public IABehaviour behavior;
     public List<IAInformation.InformationType> informationToListen;
 

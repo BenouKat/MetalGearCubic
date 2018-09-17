@@ -10,7 +10,22 @@ public class IAStateSpot : IAState
         layer = IAStateLayer.ACTIVE;
     }
 
-    protected override void PeriodicStateUpdate()
+	protected override void ConstantStateUpdate()
+	{
+		throw new System.NotImplementedException();
+	}
+
+	protected override void OnDisableState(IAStateTag nextState)
+	{
+		throw new System.NotImplementedException();
+	}
+
+	protected override void OnEnableState(IAStateTag previousState)
+	{
+		throw new System.NotImplementedException();
+	}
+
+	protected override void PeriodicStateUpdate()
     {
         throw new System.NotImplementedException();
     }

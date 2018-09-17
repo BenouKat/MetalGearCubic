@@ -125,4 +125,9 @@ public class IAStateChecking : IAState
         }
        
     }
+
+	protected override void OnDisableState(IAStateTag nextState)
+	{
+		//Nothing
+	}
 }

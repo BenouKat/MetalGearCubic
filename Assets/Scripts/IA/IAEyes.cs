@@ -94,7 +94,7 @@ public class IAEyes : MonoBehaviour {
     {
         foreach (Collider col in inFieldOfView)
         {
-            if (IsOnViewSight(col.transform, UnitManager.instance.intruderLayer))
+            if (IsOnViewSight(col.transform, UnitManager.instance.IntruderLayer))
             {
                 ProcessVisualAcuity(col.transform);
                 if(currentVisualAcuity > 0f)
@@ -107,7 +107,7 @@ public class IAEyes : MonoBehaviour {
 
     public void KeepEnemy()
     {
-        if (!IsOnViewSight(enemyFocused, UnitManager.instance.intruderLayer))
+        if (!IsOnViewSight(enemyFocused, UnitManager.instance.IntruderLayer))
         {
             currentVisualAcuity = 0f;
             enemyFocused = null;
@@ -158,10 +158,10 @@ public class IAEyes : MonoBehaviour {
     bool raycastTest;
     public bool CanBeSeen(Transform target, float distance, int layerTarget)
     {
-        layerRaycast = 1 << layerTarget | 1 << UnitManager.instance.wallLayer;
+        layerRaycast = 1 << layerTarget | 1 << UnitManager.instance.WallLayer;
         if (layerTarget <= 0)
         {
-            layerRaycast = 1 << UnitManager.instance.wallLayer;
+            layerRaycast = 1 << UnitManager.instance.WallLayer;
             distanceToTarget = Vector3.Distance(target.position, transform.position);
             if (distance > distanceToTarget)
             {
@@ -209,7 +209,7 @@ public class IAEyes : MonoBehaviour {
 
             if (Vector3.Angle(transform.forward, selectedChecker.position - transform.position) <= fieldOfView/2f)
             {
-                if (Physics.Raycast(transform.position, selectedChecker.position - transform.position, out info, spotDistance, 1 << UnitManager.instance.wallLayer))
+                if (Physics.Raycast(transform.position, selectedChecker.position - transform.position, out info, spotDistance, 1 << UnitManager.instance.WallLayer))
                 {
                     if (info.collider.CompareTag("Floor"))
                     {
